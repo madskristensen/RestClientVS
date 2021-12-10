@@ -87,5 +87,40 @@ namespace RestClient
                 }
             }
         }
+
+        public Token? GetTokenFromPosition(int position)
+        {
+            Token token = Tokens.LastOrDefault(t => t.IntersectsWith(position));
+
+            if (token is Url url && url.Uri!.IntersectsWith(position))
+            {
+                return GetVariableFromPosition(url.Uri, position);
+            }
+
+            if (token is Header header)
+            {
+                if (header.Name!.IntersectsWith(position))
+                {
+                    return GetVariableFromPosition(header.Name, position);
+                }
+
+                if (header.Value!.IntersectsWith(position))
+                {
+                    return GetVariableFromPosition(header.Value, position);
+                }
+            }
+
+            if (token is BodyToken body)
+            {
+                return GetVariableFromPosition(body, position);
+            }
+
+            return token;
+        }
+
+        private Token? GetVariableFromPosition(Token token, int position)
+        {
+            return token.Variables.FirstOrDefault(v => v.IntersectsWith(position));
+        }
     }
 }

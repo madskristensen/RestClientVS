@@ -19,6 +19,12 @@ namespace RestClient
 
         public BodyToken? Body { get; set; }
 
+        public override string Text
+        {
+            get => string.Concat(Children.Select(c => c.Text));
+            protected set => base.Text = value;
+        }
+
         public override int End
         {
             get

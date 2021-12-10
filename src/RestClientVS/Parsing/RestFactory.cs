@@ -8,7 +8,7 @@ namespace RestClientVS.Parsing
 {
     public static class RestFactory
     {
-        public static object _syncRoot = new object();
+        public static object _syncRoot = new();
         private static readonly ConditionalWeakTable<ITextSnapshot, Document> _cachedDocuments = new();
 
         public static Document ParseRestDocument(this ITextSnapshot snapshot, string file = null)

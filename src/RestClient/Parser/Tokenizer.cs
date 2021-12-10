@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace RestClient
@@ -83,7 +84,7 @@ namespace RestClient
                 return false;
             }
 
-            Token? parent = _document.Tokens.ElementAt(_document.Tokens.Count - 2);
+            Token? parent = _document.Tokens.ElementAt(Math.Max(0, _document.Tokens.Count - 2));
 
             if (parent is Header || parent is Url || (parent is Comment comment && !comment.IsSeparator))
             {
@@ -109,7 +110,8 @@ namespace RestClient
                     Uri = new TextSpan(start + urlGroup.Index, urlGroup.Value, _document),
                 };
 
-                AddVariableReferences(urlToken);
+                AddVariableReferences(urlToken.Method);
+                AddVariableReferences(urlToken.Uri);
 
                 return urlToken;
             }

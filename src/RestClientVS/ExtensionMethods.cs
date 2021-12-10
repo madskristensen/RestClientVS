@@ -5,9 +5,9 @@ namespace RestClientVS
 {
     public static class ExtensionMethods
     {
-        public static Span ToSimpleSpan(this Token span)
+        public static Span ToSimpleSpan(this Token token)
         {
-            return new Span(span.Start, span.Length);
+            return new Span(token.Start, token.Length);
         }
     }
 }

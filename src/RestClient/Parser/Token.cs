@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -16,8 +15,7 @@ namespace RestClient
 
         public int Start { get; }
 
-        [DebuggerDisplay("{Text}")]
-        public string Text { get; protected set; }
+        public virtual string Text { get; protected set; }
 
         public Document Document { get; }
 
@@ -26,6 +24,11 @@ namespace RestClient
         public virtual int Length => End - Start;
 
         public List<Reference> Variables { get; } = new List<Reference>();
+
+        public virtual bool IntersectsWith(int position)
+        {
+            return Start <= position && End >= position;
+        }
 
         public string ExpandVariables()
         {

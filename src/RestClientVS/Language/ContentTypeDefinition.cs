@@ -9,10 +9,5 @@ namespace RestClientVS.Language
         [Name(RestLanguage.LanguageName)]
         [BaseDefinition("plaintext")]
         public ContentTypeDefinition RestContentType { get; set; }
-
-        [Export(typeof(FileExtensionToContentTypeDefinition))]
-        [ContentType(RestLanguage.LanguageName)]
-        [FileExtension(".http")]
-        public FileExtensionToContentTypeDefinition HttpFileExtension { get; set; }
     }
 }

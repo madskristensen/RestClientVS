@@ -25,12 +25,12 @@ namespace RestClientVS.Classify
             _varName = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
             _varValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
             _method = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupNode);
-            _url = registry.GetClassificationType(PredefinedClassificationTypeNames.Literal);
+            _url = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
             _headerName = registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
             _headerValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Literal);
             _operator = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
             _comment = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
-            _body = registry.GetClassificationType(PredefinedClassificationTypeNames.FormalLanguage);
+            _body = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
             _refCurly = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
             _refValue = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupAttribute);
 
@@ -53,11 +53,11 @@ namespace RestClientVS.Classify
                 return list;
             }
 
-            IEnumerable<Token> e = _doc.Tokens.Where(b => b.Start <= span.End && b.Length > 0);
+            Token[] tokens = _doc.Tokens.Where(t => t.Start < span.End && t.End > span.Start).ToArray();
 
-            foreach (Token child in e)
+            foreach (Token token in tokens)
             {
-                Dictionary<Span, IClassificationType> all = GetClassificationTypes(child, span);
+                Dictionary<Span, IClassificationType> all = GetClassificationTypes(token);
 
                 foreach (Span range in all.Keys)
                 {
@@ -69,7 +69,7 @@ namespace RestClientVS.Classify
             return list;
         }
 
-        private Dictionary<Span, IClassificationType> GetClassificationTypes(Token token, SnapshotSpan span)
+        private Dictionary<Span, IClassificationType> GetClassificationTypes(Token token)
         {
             var spans = new Dictionary<Span, IClassificationType>();
 
@@ -91,7 +91,7 @@ namespace RestClientVS.Classify
                     AddSpans(spans, url.Method, _method);
                 }
 
-                AddSpans(spans, url, _url);
+                AddSpans(spans, url.Uri, _url);
             }
             else if (token is Header header)
             {

@@ -29,6 +29,8 @@
   </Commands>
 
   <Symbols>
+    <GuidSymbol name="RestEditorFactory" value="{ed091b30-0d58-4343-9c24-4aad5c417422}" />
+    
     <GuidSymbol name="RestClientVS" value="{bb294b08-c71b-4feb-8772-5a10f5b8b36c}">
       <IDSymbol name="MyMenuGroup" value="0x0001" />
       <IDSymbol name="MyCommand" value="0x0100" />

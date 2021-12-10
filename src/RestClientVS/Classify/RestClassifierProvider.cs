@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.Utilities;
 namespace RestClientVS.Classify
 {
     [Export(typeof(IClassifierProvider))]
-    [ContentType("text")]
+    [ContentType(RestLanguage.LanguageName)]
     internal class RestClassifierProvider : IClassifierProvider
     {
         [Import]
