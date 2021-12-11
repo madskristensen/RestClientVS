@@ -185,14 +185,15 @@ namespace RestClient
                 Group? valueGroup = match.Groups["value"];
                 Group? closeGroup = match.Groups["close"];
 
-                var header = new Reference(start + match.Index, match.Value, _document)
+                var reference = new Reference(start + match.Index, match.Value, _document)
                 {
                     Open = new TextSpan(start + openGroup.Index, openGroup.Value, _document),
                     Value = new TextSpan(start + valueGroup.Index, valueGroup.Value, _document),
                     Close = new TextSpan(start + closeGroup.Index, closeGroup.Value, _document),
                 };
 
-                token.Variables.Add(header);
+                token.Variables.Add(reference);
+                //_document.Tokens.Add(reference);
             }
         }
     }

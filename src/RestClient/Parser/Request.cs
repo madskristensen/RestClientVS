@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using RestClient.Client;
 
 namespace RestClient
 {
@@ -36,13 +33,6 @@ namespace RestClient
 
                 return base.End;
             }
-        }
-
-        public async Task<RequestBuilder> SendAsync(CancellationToken cancellationToken = default)
-        {
-            var builder = new RequestBuilder(this);
-            await builder.SendAsync(cancellationToken);
-            return builder;
         }
     }
 }

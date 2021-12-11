@@ -5,12 +5,28 @@ namespace RestClient
 {
     public class Document
     {
+        private Dictionary<string, string>? _variables = null;
+
         private Document()
         { }
 
         public List<Token> Tokens { get; } = new List<Token>();
+
         public List<Token> Hierarchy { get; } = new List<Token>();
-        public IEnumerable<Variable> Variables => Hierarchy.OfType<Variable>();
+
+        public Dictionary<string, string>? Variables
+        {
+            get
+            {
+                if (_variables == null)
+                {
+                    ExpandVariables();
+                }
+
+                return _variables;
+            }
+        }
+
         public IEnumerable<Request> Requests => Hierarchy.OfType<Request>();
 
         public static Document FromLines(params string[] lines)
@@ -86,6 +102,28 @@ namespace RestClient
                     }
                 }
             }
+        }
+
+        private void ExpandVariables()
+        {
+            IEnumerable<Variable>? variables = Tokens.OfType<Variable>();
+
+            Dictionary<string, string> expandedVars = new();
+
+            // Start by expanding all variable definitions
+            foreach (Variable variable in variables)
+            {
+                var value = variable.Value!.Text;
+
+                foreach (var key in expandedVars.Keys)
+                {
+                    value = value.Replace("{{" + key + "}}", expandedVars[key].Trim());
+                }
+
+                expandedVars[variable.Name!.Text] = value;
+            }
+
+            _variables = expandedVars;
         }
 
         public Token? GetTokenFromPosition(int position)

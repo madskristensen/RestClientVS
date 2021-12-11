@@ -16,8 +16,7 @@ namespace RestClientTest
         public async Task SendAsync(string url)
         {
             var doc = Document.FromLines(url);
-            var client = new RequestBuilder(doc.Requests.First());
-            await client.SendAsync();
+            RequestResult client = await RequestSender.SendAsync(doc.Requests.First());
             var raw = await client.Response.ToRawStringAsync();
 
             Assert.NotNull(client.Response);

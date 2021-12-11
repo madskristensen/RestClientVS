@@ -8,7 +8,7 @@ namespace RestClientVS
     internal sealed partial class Vsix
     {
         public const string Id = "RestClientVS.a7b4a362-3ce8-4953-9b19-a35166f2cbfd";
-        public const string Name = "RestClientVS";
+        public const string Name = "Rest Client";
         public const string Description = @"Empty VSIX Project.";
         public const string Language = "en-US";
         public const string Version = "1.0.3";

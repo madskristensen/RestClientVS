@@ -66,13 +66,18 @@
     <Compile Include="Parsing\RestFactory.cs" />
     <Compile Include="Parsing\ParsingEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Commands\MyCommand.cs" />
+    <Compile Include="Commands\SendRequestCommand.cs" />
+    <Compile Include="QuickInfo\VariableQuickInfoProvider.cs" />
+    <Compile Include="QuickInfo\VariableQuickInfoSource.cs" />
     <Compile Include="RestClientVSPackage.cs" />
     <Compile Include="source.extension.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>source.extension.vsixmanifest</DependentUpon>
     </Compile>
+    <Compile Include="SuggestedActions\SendRequestAction.cs" />
+    <Compile Include="SuggestedActions\SuggestedActionsSource.cs" />
+    <Compile Include="SuggestedActions\SuggestedActionsSourceProvider.cs" />
     <Compile Include="VSCommandTable.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -101,6 +106,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Design" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Community.VisualStudio.VSCT" Version="16.0.29.6" PrivateAssets="all" />

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Composition;
+﻿using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.VisualStudio.Commanding;
 using Microsoft.VisualStudio.Text;
@@ -24,10 +25,11 @@ namespace RestClientVS.Commands
 
             Document document = RestFactory.ParseRestDocument(args.TextView.TextBuffer.CurrentSnapshot);
             Token token = document.GetTokenFromPosition(position);
+            IEnumerable<Variable> variables = document.Tokens.OfType<Variable>();
 
             if (token is RestClient.Reference reference)
             {
-                Variable definition = document.Variables.FirstOrDefault(v => v.Name.Text.Equals(reference.Value.Text, StringComparison.OrdinalIgnoreCase));
+                Variable definition = variables.FirstOrDefault(v => v.Name.Text.Equals(reference.Value.Text, StringComparison.OrdinalIgnoreCase));
 
                 if (definition != null)
                 {

@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace RestClient
 {
@@ -32,16 +30,18 @@ namespace RestClient
 
         public string ExpandVariables()
         {
-            IEnumerable<Variable>? variables = Document.Tokens.OfType<Variable>();
+            // Then replace the references with the expanded values
+            var clean = Text;
 
-            var sb = new StringBuilder(Text);
-
-            foreach (Variable? variable in variables)
+            if (Document.Variables != null)
             {
-                sb.Replace("{{" + variable?.Name?.Text + "}}", variable?.Value?.Text);
+                foreach (var key in Document.Variables.Keys)
+                {
+                    clean = clean.Replace("{{" + key + "}}", Document.Variables[key].Trim());
+                }
             }
 
-            return sb.ToString();
+            return clean.Trim();
         }
     }
 }
