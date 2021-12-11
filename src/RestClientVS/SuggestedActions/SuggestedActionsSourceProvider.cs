@@ -11,24 +11,9 @@ namespace RestClientVS
     [ContentType(RestLanguage.LanguageName)]
     internal class SuggestedActionsSourceProvider : ISuggestedActionsSourceProvider
     {
-        private ITextDocumentFactoryService TextDocumentFactoryService { get; set; }
-
-        [ImportingConstructor]
-        public SuggestedActionsSourceProvider(ITextDocumentFactoryService textDocumentFactoryService)
-        {
-            TextDocumentFactoryService = textDocumentFactoryService;
-        }
-
         public ISuggestedActionsSource CreateSuggestedActionsSource(ITextView textView, ITextBuffer textBuffer)
         {
-
-            if (TextDocumentFactoryService.TryGetTextDocument(textView.TextBuffer, out ITextDocument document))
-            {
-                return textView.Properties.GetOrCreateSingletonProperty(() =>
-                    new SuggestedActionsSource(textView, document.FilePath));
-            }
-
-            return null;
+            return textView.Properties.GetOrCreateSingletonProperty(() => new SuggestedActionsSource(textView));
         }
     }
 }

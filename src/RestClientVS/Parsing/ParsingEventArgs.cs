@@ -5,15 +5,13 @@ namespace RestClientVS.Parsing
 {
     public class ParsingEventArgs : EventArgs
     {
-        public ParsingEventArgs(Document document, string file, ITextSnapshot snapshot)
+        public ParsingEventArgs(Document document, ITextBuffer buffer)
         {
             Document = document;
-            File = file;
-            Snapshot = snapshot;
+            TextBuffer = buffer;
         }
 
         public Document Document { get; set; }
-        public string File { get; set; }
-        public ITextSnapshot Snapshot { get; set; }
+        public ITextBuffer TextBuffer { get; set; }
     }
 }

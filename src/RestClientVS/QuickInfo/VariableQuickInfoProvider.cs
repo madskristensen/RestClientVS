@@ -11,17 +11,9 @@ namespace RestClientVS.QuickInfo
     [Order]
     internal sealed class VariableQuickInfoSourceProvider : IAsyncQuickInfoSourceProvider
     {
-        [Import]
-        public ITextDocumentFactoryService TextDocumentFactoryService { get; set; }
-
         public IAsyncQuickInfoSource TryCreateQuickInfoSource(ITextBuffer buffer)
         {
-            if (!TextDocumentFactoryService.TryGetTextDocument(buffer, out ITextDocument document))
-            {
-                return null;
-            }
-
-            return buffer.Properties.GetOrCreateSingletonProperty(() => new VariableQuickInfoSource(buffer, document.FilePath));
+            return buffer.Properties.GetOrCreateSingletonProperty(() => new VariableQuickInfoSource(buffer));
         }
     }
 }

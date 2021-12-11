@@ -11,18 +11,9 @@ namespace MarkdownEditor.Outlining
     [ContentType(RestLanguage.LanguageName)]
     public class RestOutliningProvider : ITaggerProvider
     {
-        [Import]
-        public ITextDocumentFactoryService TextDocumentFactoryService { get; set; }
-
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
-
-            if (!TextDocumentFactoryService.TryGetTextDocument(buffer, out ITextDocument document))
-            {
-                return null;
-            }
-
-            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestOutliningTagger(buffer, document.FilePath)) as ITagger<T>;
+            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestOutliningTagger(buffer)) as ITagger<T>;
         }
     }
 }

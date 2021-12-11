@@ -17,7 +17,7 @@ namespace RestClientVS
     [Guid(PackageGuids.RestClientVSString)]
 
     [ProvideLanguageService(typeof(RestLanguage), RestLanguage.LanguageName, 100, ShowDropDownOptions = true, DefaultToInsertSpaces = true, EnableCommenting = true, AutoOutlining = true, MatchBraces = true, MatchBracesAtCaret = true, ShowMatchingBrace = true, ShowSmartIndent = true)]
-    //[ProvideLanguageEditorOptionPage(typeof(Options), MarkdownLanguage.LanguageName, null, "Advanced", "#101", new[] { "markdown", "md" })]
+    [ProvideLanguageEditorOptionPage(typeof(OptionsProvider.GeneralOptions), RestLanguage.LanguageName, null, "Advanced", "#101", new[] { "http", "rest", "timeout" })]
     [ProvideLanguageExtension(typeof(RestLanguage), ".http")]
     [ProvideLanguageExtension(typeof(RestLanguage), ".rest")]
 

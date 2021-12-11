@@ -64,7 +64,8 @@ namespace RestClientVS.SuggestedActions
                 await VS.StatusBar.ShowMessageAsync($"Sending request to {_request.Url.Uri.ExpandVariables()}...");
                 await VS.StatusBar.StartAnimationAsync(StatusAnimation.Sync);
 
-                RequestResult result = await RequestSender.SendAsync(_request, cancellationToken);
+                General options = await General.GetLiveInstanceAsync();
+                RequestResult result = await RequestSender.SendAsync(_request, TimeSpan.FromSeconds(options.Timeout), cancellationToken);
 
                 if (result.Response != null)
                 {

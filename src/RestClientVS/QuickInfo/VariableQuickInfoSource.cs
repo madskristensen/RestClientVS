@@ -18,12 +18,10 @@ namespace RestClientVS.QuickInfo
         private static readonly ImageId _icon = KnownMonikers.PromoteVariable.ToImageId();
 
         private readonly ITextBuffer _buffer;
-        private readonly string _file;
 
-        public VariableQuickInfoSource(ITextBuffer buffer, string file)
+        public VariableQuickInfoSource(ITextBuffer buffer)
         {
             _buffer = buffer;
-            _file = file;
         }
 
         // This is called on a background thread.
@@ -33,7 +31,7 @@ namespace RestClientVS.QuickInfo
 
             if (triggerPoint != null)
             {
-                Document doc = _buffer.CurrentSnapshot.ParseRestDocument(_file);
+                Document doc = _buffer.GetDocument();
                 var position = triggerPoint.Value.Position;
 
                 IEnumerable<Token> tokens = doc.Tokens.Where(t => t.IntersectsWith(position));

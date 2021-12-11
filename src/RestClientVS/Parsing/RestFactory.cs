@@ -11,25 +11,21 @@ namespace RestClientVS.Parsing
         public static object _syncRoot = new();
         private static readonly ConditionalWeakTable<ITextSnapshot, Document> _cachedDocuments = new();
 
-        public static Document ParseRestDocument(this ITextSnapshot snapshot, string file = null)
+        public static Document GetDocument(this ITextBuffer buffer)
         {
             lock (_syncRoot)
             {
-                return _cachedDocuments.GetValue(snapshot, key =>
+                return _cachedDocuments.GetValue(buffer.CurrentSnapshot, key =>
                 {
                     IEnumerable<ITextSnapshotLine> lines = key.Lines;
-                    Document document = Parse(lines);
-                    Parsed?.Invoke(snapshot, new ParsingEventArgs(document, file, snapshot));
+                    var textLines = lines.Select(line => line.GetTextIncludingLineBreak()).ToArray();
+                    var document = Document.FromLines(textLines);
+
+                    Parsed?.Invoke(buffer, new ParsingEventArgs(document, buffer));
+
                     return document;
                 });
             }
-        }
-
-        public static Document Parse(IEnumerable<ITextSnapshotLine> lines)
-        {
-            var textLines = lines.Select(line => line.GetTextIncludingLineBreak()).ToArray();
-
-            return Document.FromLines(textLines);
         }
 
         public static event EventHandler<ParsingEventArgs> Parsed;

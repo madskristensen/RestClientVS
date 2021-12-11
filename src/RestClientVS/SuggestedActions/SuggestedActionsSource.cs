@@ -14,18 +14,16 @@ namespace RestClientVS
     internal class SuggestedActionsSource : ISuggestedActionsSource
     {
         private readonly ITextView _view;
-        private readonly string _file;
         private Request _request;
 
-        public SuggestedActionsSource(ITextView view, string file)
+        public SuggestedActionsSource(ITextView view)
         {
             _view = view;
-            _file = file;
         }
 
         public Task<bool> HasSuggestedActionsAsync(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
         {
-            Document doc = _view.TextBuffer.CurrentSnapshot.ParseRestDocument(_file);
+            Document doc = _view.TextBuffer.GetDocument();
             _request = doc.Requests.LastOrDefault(r => r.IntersectsWith(range.Start.Position));
             return Task.FromResult(_request != null);
         }

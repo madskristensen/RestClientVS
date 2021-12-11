@@ -14,12 +14,10 @@ namespace RestClientVS.Classify
         private readonly ITextBuffer _buffer;
         private bool _isProcessing;
         private Document _doc;
-        private readonly string _file;
 
-        internal RestClassifier(ITextBuffer buffer, IClassificationTypeRegistryService registry, string file)
+        internal RestClassifier(ITextBuffer buffer, IClassificationTypeRegistryService registry)
         {
             _buffer = buffer;
-            _file = file;
 
             _varAt = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
             _varName = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
@@ -135,7 +133,7 @@ namespace RestClientVS.Classify
 
             ThreadHelper.JoinableTaskFactory.RunAsync(() =>
             {
-                _doc = _buffer.CurrentSnapshot.ParseRestDocument(_file);
+                _doc = _buffer.GetDocument();
 
                 var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
 

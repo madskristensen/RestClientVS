@@ -54,12 +54,13 @@
     <Compile Include="Commands\CommentCommand.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Language\ContentTypeDefinition.cs" />
-    <Compile Include="Language\Base\EditorFactoryBase.cs" />
-    <Compile Include="Language\Base\RestAuthoringScope.cs" />
-    <Compile Include="Language\Base\RestColorizer.cs" />
+    <Compile Include="BaseClasses\EditorFactoryBase.cs" />
+    <Compile Include="BaseClasses\RestAuthoringScope.cs" />
+    <Compile Include="BaseClasses\RestColorizer.cs" />
     <Compile Include="Language\EditorFactory.cs" />
     <Compile Include="Language\RestLanguage.cs" />
-    <Compile Include="Language\Base\RestSource.cs" />
+    <Compile Include="BaseClasses\RestSource.cs" />
+    <Compile Include="Options\General.cs" />
     <Compile Include="Outlining\RestOutliningProvider.cs" />
     <Compile Include="Outlining\RestOutliningTagger.cs" />
     <Compile Include="ProvideBraceCompletionAttribute.cs" />

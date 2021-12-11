@@ -12,12 +12,10 @@ namespace MarkdownEditor.Outlining
         private Document _doc;
         private bool _isProcessing;
         private readonly ITextBuffer _buffer;
-        private readonly string _file;
 
-        public RestOutliningTagger(ITextBuffer buffer, string file)
+        public RestOutliningTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
-            _file = file;
             ParseDocument();
 
             _buffer.Changed += BufferChanged;
@@ -65,7 +63,7 @@ namespace MarkdownEditor.Outlining
 
             ThreadHelper.JoinableTaskFactory.RunAsync(() =>
             {
-                _doc = _buffer.CurrentSnapshot.ParseRestDocument(_file);
+                _doc = _buffer.GetDocument();
 
                 var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
 

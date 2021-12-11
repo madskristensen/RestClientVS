@@ -9,7 +9,7 @@ namespace RestClient.Client
     {
 
 
-        public static async Task<RequestResult> SendAsync(Request request, CancellationToken cancellationToken = default)
+        public static async Task<RequestResult> SendAsync(Request request, TimeSpan timeOut, CancellationToken cancellationToken = default)
         {
             RequestResult result = new();
             HttpRequestMessage? requestMessage = BuildRequest(request, result);
@@ -20,15 +20,22 @@ namespace RestClient.Client
                 UseDefaultCredentials = true,
             };
 
-            var client = new HttpClient(handler);
+            using (var client = new HttpClient(handler))
+            {
+                client.Timeout = timeOut;
 
-            try
-            {
-                result.Response = await client.SendAsync(requestMessage, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                result.ErrorMessage = ex.InnerException.Message;
+                try
+                {
+                    result.Response = await client.SendAsync(requestMessage, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    result.ErrorMessage = $"Request timed out after {timeOut.TotalSeconds}";
+                }
+                catch (Exception ex)
+                {
+                    result.ErrorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                }
             }
 
             return result;
