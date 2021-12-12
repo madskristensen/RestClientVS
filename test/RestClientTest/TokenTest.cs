@@ -194,5 +194,18 @@ mads: ost
             Assert.Equal(8, variable.Value.Start);
             Assert.Equal(5, variable.Value.Length);
         }
+
+        [Fact]
+        public void CommentInBetweenHeaders()
+        {
+            var text = @"POST https://example.com
+Content-Type:application/jason
+#comment
+Accept: gzip".Split(Environment.NewLine);
+
+            var doc = Document.FromLines(text);
+
+            Assert.Equal(4, doc.Tokens.Count);
+        }
     }
 }

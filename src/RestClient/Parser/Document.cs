@@ -87,6 +87,7 @@ namespace RestClient
                         if (comment.IsSeparator)
                         {
                             currentRequest = null;
+                            Hierarchy.Add(comment);
                         }
                         else
                         {

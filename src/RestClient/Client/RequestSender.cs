@@ -106,11 +106,11 @@ namespace RestClient.Client
         {
             return methodName?.ToLowerInvariant() switch
             {
-                "delete" => HttpMethod.Delete,
                 "head" => HttpMethod.Head,
-                "options" => HttpMethod.Options,
                 "post" => HttpMethod.Post,
                 "put" => HttpMethod.Put,
+                "delete" => HttpMethod.Delete,
+                "options" => HttpMethod.Options,
                 "trace" => HttpMethod.Trace,
                 _ => HttpMethod.Get,
             };

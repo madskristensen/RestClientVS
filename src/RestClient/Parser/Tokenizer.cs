@@ -62,7 +62,7 @@ namespace RestClient
                 return ParseUrlToken(start, line);
             }
             // Header
-            else if (trimmedLine.Contains(":") && (_document.Tokens.Last() is Header || _document.Tokens.Last() is Url))
+            else if (trimmedLine.Contains(":") && (_document.Tokens.Last() is Header || _document.Tokens.Last() is Url || _document.Tokens.Last() is Comment))
             {
                 return ParseRequestHeaders(start, line);
             }
@@ -176,7 +176,7 @@ namespace RestClient
 
         private void AddVariableReferences(Token token)
         {
-            var regex = new Regex(@"(?<open>{{)(?<value>\$?[\w]+( [\w]+)?)(?<close>}})");
+            var regex = new Regex(@"(?<open>{{)(?<value>\$?[\w]+( [\w]+)?)?(?<close>}})");
             var start = token.Start;
 
             foreach (Match match in regex.Matches(token.Text))

@@ -52,6 +52,9 @@
     <Compile Include="Commands\GoToDefinitionCommand.cs" />
     <Compile Include="Commands\UncommentCommand.cs" />
     <Compile Include="Commands\CommentCommand.cs" />
+    <Compile Include="Completion\CompletionCatalog.cs" />
+    <Compile Include="Completion\RestCompletionProvider.cs" />
+    <Compile Include="Completion\RestCompletionSource.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Language\ContentTypeDefinition.cs" />
     <Compile Include="BaseClasses\EditorFactoryBase.cs" />
