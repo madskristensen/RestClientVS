@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using RestClient;
 using Xunit;
 
@@ -43,9 +42,9 @@ namespace RestClientTest
         [Fact]
         public void ExpandUrlVariablesRecursive()
         {
-            var text = @"@hostname=bing.com 
-@host={{hostname}}
-GET https://{{host}}".Split(Environment.NewLine);
+            var text = new[] { "@hostname=bing.com\r\n",
+                       "@host={{hostname}}\r\n",
+                       "GET https://{{host}}" };
 
             var doc = Document.FromLines(text);
             Request r = doc.Requests.FirstOrDefault();

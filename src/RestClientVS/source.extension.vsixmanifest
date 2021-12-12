@@ -5,8 +5,10 @@
         <DisplayName>Rest Client</DisplayName>
         <Description>Empty VSIX Project.</Description>
         <MoreInfo>https://github.com/madskristensen/RestClientVS</MoreInfo>
+        <License>Resources\LICENSE</License>
         <Icon>Resources\Icon.png</Icon>
         <PreviewImage>Resources\Icon.png</PreviewImage>
+        <Tags>rest, http, postman</Tags>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">

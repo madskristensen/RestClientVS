@@ -51,11 +51,11 @@ namespace RestClientTest
         [Fact]
         public void MultipleRequests()
         {
-            var lines = @"http://example.com
-
-###
-
-http://bing.com".Split(Environment.NewLine);
+            var lines = new[] {@"http://example.com",
+                                "",
+                                "###",
+                                "",
+                                "http://bing.com"};
 
             var doc = Document.FromLines(lines);
 
@@ -160,16 +160,16 @@ http://bing.com".Split(Environment.NewLine);
         [Fact]
         public void BodyAfterComment()
         {
-            var text = @"PATCH https://{{host}}/authors/{{name}}
-Content-Type: at{{contentType}}svin
-#ost
-mads: ost
-
-{
-    ""content"": ""foo bar"",
-    ""created_at"": ""{{createdAt}}"",
-    ""modified_by"": ""{{modifiedBy}}""
-}".Split(Environment.NewLine);
+            var text = new[] { @"PATCH https://{{host}}/authors/{{name}}",
+"Content-Type: at{{contentType}}svin",
+"#ost",
+"mads: ost",
+"",
+"{",
+"    \"content\": \"foo bar\",",
+"    \"created_at\": \"{{createdAt}}\",",
+"    \"modified_by\": \"{{modifiedBy}}\"",
+"}"};
 
             var doc = Document.FromLines(text);
             Request request = doc.Requests.First();
@@ -198,10 +198,10 @@ mads: ost
         [Fact]
         public void CommentInBetweenHeaders()
         {
-            var text = @"POST https://example.com
-Content-Type:application/jason
-#comment
-Accept: gzip".Split(Environment.NewLine);
+            var text = new[] { @"POST https://example.com",
+                                "Content-Type:application/json",
+                                "#comment",
+                                "Accept: gzip" };
 
             var doc = Document.FromLines(text);
 
