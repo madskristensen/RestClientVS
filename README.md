@@ -7,7 +7,7 @@ or get the [CI build](https://www.vsixgallery.com/extension/RestClientVS.a7b4a36
 
 --------------------------------
 
-Coming soon...
+REST Client allows you to send HTTP request and view the response in Visual Studio directly.. Based on the popular VS Code extension [Rest Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) by [Huachao Mao](https://github.com/Huachao)
 
 
 ## License

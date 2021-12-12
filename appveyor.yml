@@ -12,7 +12,7 @@ build_script:
   - msbuild /p:configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
 test_script:
-  - dotnet test test/RestClientTest/RestClientTest.csproj
+  - dotnet test test/RestClientTest/RestClientTest.csproj --no-build
 
 deploy_script:
   - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
