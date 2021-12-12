@@ -29,9 +29,9 @@ namespace RestClientVS.Completion
 
         public Task<CompletionContext> GetCompletionContextAsync(IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken cancellationToken)
         {
-            Document document = session.TextView.TextBuffer.GetDocument();
-
             ITextSnapshotLine line = triggerLocation.GetContainingLine();
+
+            Document document = session.TextView.TextBuffer.GetDocument();
             SnapshotPoint lineStart = line.Start;
             Token token = GetPreviousToken(document, lineStart, out var hasEmptyLine);
 
@@ -45,8 +45,9 @@ namespace RestClientVS.Completion
             }
 
             // Variable references
-            Token reference = document.Tokens.LastOrDefault(v => v.IntersectsWith(triggerLocation.Position));
-            if (reference != null)
+            Token currentToken = document.Tokens.LastOrDefault(v => v.IntersectsWith(triggerLocation.Position));
+            RestClient.Reference currentReference = currentToken?.Variables.FirstOrDefault(v => v.IntersectsWith(triggerLocation.Position));
+            if (currentReference != null)
             {
                 return Task.FromResult(ConvertToCompletionItems(document.Variables, _referenceIcon));
             }
@@ -136,6 +137,7 @@ namespace RestClientVS.Completion
             if (char.IsNumber(trigger.Character)         // a number
                 || char.IsPunctuation(trigger.Character) // punctuation
                 || trigger.Character == '\n'             // new line
+                || trigger.Character == '#'              // comment
                 || trigger.Reason == CompletionTriggerReason.Backspace
                 || trigger.Reason == CompletionTriggerReason.Deletion)
             {
@@ -156,6 +158,12 @@ namespace RestClientVS.Completion
             // return CompletionStartData(CompletionParticipation.DoesNotProvideItems, spanForOtherExtensions);
 
             SnapshotSpan tokenSpan = FindTokenSpanAtPosition(triggerLocation);
+
+            if (triggerLocation.GetContainingLine().GetText().StartsWith("#", StringComparison.Ordinal))
+            {
+                return CompletionStartData.DoesNotParticipateInCompletion;
+            }
+
             return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
         }
 

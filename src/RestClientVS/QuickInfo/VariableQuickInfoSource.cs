@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Core.Imaging;
-using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using RestClient;
@@ -12,8 +10,6 @@ namespace RestClientVS.QuickInfo
 {
     internal sealed class VariableQuickInfoSource : IAsyncQuickInfoSource
     {
-        private static readonly ImageId _icon = KnownMonikers.PromoteVariable.ToImageId();
-
         private readonly ITextBuffer _buffer;
 
         public VariableQuickInfoSource(ITextBuffer buffer)

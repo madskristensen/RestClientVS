@@ -35,7 +35,7 @@ namespace RestClient
             var trimmedLine = line.Trim();
 
             // Comment
-            if (trimmedLine.StartsWith("#") || trimmedLine.StartsWith("//"))
+            if (trimmedLine.StartsWith("#"))
             {
                 return new Comment(start, line, _document);
             }
@@ -110,6 +110,7 @@ namespace RestClient
                     Uri = new TextSpan(start + urlGroup.Index, urlGroup.Value, _document),
                 };
 
+                AddVariableReferences(urlToken);
                 AddVariableReferences(urlToken.Method);
                 AddVariableReferences(urlToken.Uri);
 
@@ -137,6 +138,7 @@ namespace RestClient
                     Operator = new TextSpan(start + operatorGroup.Index, operatorGroup.Value, _document),
                 };
 
+                AddVariableReferences(header);
                 AddVariableReferences(header.Name);
                 AddVariableReferences(header.Value);
 
