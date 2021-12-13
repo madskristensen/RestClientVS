@@ -56,13 +56,11 @@
     <Compile Include="Completion\RestCompletionProvider.cs" />
     <Compile Include="Completion\RestCompletionSource.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Language\ContentTypeDefinition.cs" />
-    <Compile Include="BaseClasses\EditorFactoryBase.cs" />
-    <Compile Include="BaseClasses\RestAuthoringScope.cs" />
-    <Compile Include="BaseClasses\RestColorizer.cs" />
-    <Compile Include="Language\EditorFactory.cs" />
+    <Compile Include="BaseClasses\LanguageBase.cs" />
+    <Compile Include="BaseClasses\DefaultAuthoringScope.cs" />
+    <Compile Include="BaseClasses\DefaultColorizer.cs" />
     <Compile Include="Language\RestLanguage.cs" />
-    <Compile Include="BaseClasses\RestSource.cs" />
+    <Compile Include="BaseClasses\DefaultSource.cs" />
     <Compile Include="Options\General.cs" />
     <Compile Include="Outlining\RestOutliningProvider.cs" />
     <Compile Include="Outlining\RestOutliningTagger.cs" />

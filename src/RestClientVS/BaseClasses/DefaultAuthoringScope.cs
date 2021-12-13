@@ -5,7 +5,7 @@ using TextSpan = Microsoft.VisualStudio.TextManager.Interop.TextSpan;
 
 namespace RestClientVS
 {
-    internal class RestAuthoringScope : AuthoringScope
+    internal class DefaultAuthoringScope : AuthoringScope
     {
         public override string GetDataTipText(int line, int col, out TextSpan span)
         {

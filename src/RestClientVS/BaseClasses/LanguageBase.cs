@@ -14,43 +14,104 @@
  *
  * ***************************************************************************/
 
-using ErrorHandler = Microsoft.VisualStudio.ErrorHandler;
-using IComponentModel = Microsoft.VisualStudio.ComponentModelHost.IComponentModel;
-using IConnectionPoint = Microsoft.VisualStudio.OLE.Interop.IConnectionPoint;
-using IConnectionPointContainer = Microsoft.VisualStudio.OLE.Interop.IConnectionPointContainer;
-using IObjectWithSite = Microsoft.VisualStudio.OLE.Interop.IObjectWithSite;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Package;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.TextManager.Interop;
 using IOleServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
-using IVsCodeWindow = Microsoft.VisualStudio.TextManager.Interop.IVsCodeWindow;
-using IVsEditorAdaptersFactoryService = Microsoft.VisualStudio.Editor.IVsEditorAdaptersFactoryService;
-using IVsEditorFactory = Microsoft.VisualStudio.Shell.Interop.IVsEditorFactory;
-using IVsHierarchy = Microsoft.VisualStudio.Shell.Interop.IVsHierarchy;
-using IVsTextBufferDataEvents = Microsoft.VisualStudio.TextManager.Interop.IVsTextBufferDataEvents;
-using IVsTextBufferProvider = Microsoft.VisualStudio.Shell.Interop.IVsTextBufferProvider;
-using IVsTextLines = Microsoft.VisualStudio.TextManager.Interop.IVsTextLines;
-using IVsUserData = Microsoft.VisualStudio.TextManager.Interop.IVsUserData;
-using Marshal = System.Runtime.InteropServices.Marshal;
-using Package = Microsoft.VisualStudio.Shell.Package;
-using READONLYSTATUS = Microsoft.VisualStudio.TextManager.Interop.READONLYSTATUS;
-using SComponentModel = Microsoft.VisualStudio.ComponentModelHost.SComponentModel;
-using ServiceProvider = Microsoft.VisualStudio.Shell.ServiceProvider;
-using VSConstants = Microsoft.VisualStudio.VSConstants;
-using VsTextBufferClass = Microsoft.VisualStudio.TextManager.Interop.VsTextBufferClass;
 
 namespace RestClientVS
 {
-    public abstract class EditorFactoryBase : IVsEditorFactory
+    public abstract class LanguageBase : LanguageService, IVsEditorFactory
     {
         private readonly Package _package;
         private readonly Guid _languageServiceId;
+
+        #region Language Service
+
+        private LanguagePreferences _preferences = null;
+
+        public LanguageBase(object site)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            SetSite(site);
+
+            _package = site as Package;
+            _languageServiceId = GetType().GUID;
+        }
+
+        public abstract override string Name { get; }
+
+        public abstract string[] FileExtensions { get; }
+
+        public override Source CreateSource(IVsTextLines buffer)
+        {
+            return new DefaultSource(this, buffer, new DefaultColorizer(this, buffer, null));
+        }
+
+        public override TypeAndMemberDropdownBars CreateDropDownHelper(IVsTextView forView)
+        {
+            return base.CreateDropDownHelper(forView);
+        }
+
+        public abstract void SetDefaultPreferences(LanguagePreferences preferences);
+
+        public override LanguagePreferences GetLanguagePreferences()
+        {
+            if (_preferences == null)
+            {
+                _preferences = new LanguagePreferences(Site, _languageServiceId, Name);
+
+                if (_preferences != null)
+                {
+                    _preferences.Init();
+
+                    SetDefaultPreferences(_preferences);
+                }
+            }
+
+            return _preferences;
+        }
+
+        public override IScanner GetScanner(IVsTextLines buffer)
+        {
+            return null;
+        }
+
+        public override AuthoringScope ParseSource(ParseRequest req)
+        {
+            return new DefaultAuthoringScope();
+        }
+
+        public override string GetFormatFilterList()
+        {
+            // Constructs a string similar to: Foo File (*.foo, *.bar)|*.foo;*.bar";
+            IEnumerable<string> normalized = FileExtensions.Select(f => $"*{f}");
+            var first = string.Join(", ", normalized);
+            var second = string.Join(";", normalized);
+
+            return $"{Name} File ({first})|{second}";
+        }
+
+        #endregion
+
+        #region IVsEditorFactory
+
         private ServiceProvider _serviceProvider;
 
-        public EditorFactoryBase(Package package, Guid languageServiceId)
+        public LanguageBase(Package package, Guid languageServiceId)
         {
             _package = package;
             _languageServiceId = languageServiceId;
         }
 
-        protected bool PromptEncodingOnLoad => false;
+        protected virtual bool PromptEncodingOnLoad => false;
 
         public virtual int SetSite(IOleServiceProvider psp)
         {
@@ -270,7 +331,6 @@ namespace RestClientVS
 
             cmdUI = VSConstants.GUID_TextEditorFactory;
 
-            //var componentModel = (IComponentModel)new VsServiceProviderWrapper(Package).GetService(typeof(SComponentModel));
             var bufferEventListener = new TextBufferEventListener(textLines, _languageServiceId);
             if (!createdDocData)
             {
@@ -315,5 +375,7 @@ namespace RestClientVS
                 return VSConstants.S_OK;
             }
         }
+
+        #endregion
     }
 }

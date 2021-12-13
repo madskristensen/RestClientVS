@@ -7,7 +7,6 @@ using System.Threading;
 using MarkdownEditor;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
-using RestClientVS.Language;
 
 namespace RestClientVS
 {
@@ -21,25 +20,22 @@ namespace RestClientVS
     [ProvideLanguageExtension(typeof(RestLanguage), ".http")]
     [ProvideLanguageExtension(typeof(RestLanguage), ".rest")]
 
-    [ProvideEditorFactory(typeof(EditorFactory), 110, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_None, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
-    [ProvideEditorLogicalView(typeof(EditorFactory), VSConstants.LOGVIEWID.TextView_string, IsTrusted = true)]
+    [ProvideEditorFactory(typeof(RestLanguage), 110, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_None, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
+    [ProvideEditorLogicalView(typeof(RestLanguage), VSConstants.LOGVIEWID.TextView_string, IsTrusted = true)]
 
-    [ProvideEditorExtension(typeof(EditorFactory), ".http", 1000)]
-    [ProvideEditorExtension(typeof(EditorFactory), ".rest", 1000)]
+    [ProvideEditorExtension(typeof(RestLanguage), ".http", 1000)]
+    [ProvideEditorExtension(typeof(RestLanguage), ".rest", 1000)]
 
     [ProvideBraceCompletion(RestLanguage.LanguageName)]
     public sealed class RestClientVSPackage : ToolkitPackage
     {
-        public static RestLanguage Language { get; private set; }
+        //public static RestLanguage Language { get; private set; }
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             // Create text view host: ITextEditorFactoryService
 
-            Language = new RestLanguage(this);
-
-            var editorFactory = new EditorFactory(this, typeof(RestLanguage).GUID);
-            RegisterEditorFactory(editorFactory);
+            RegisterEditorFactory(new RestLanguage(this));
 
             await this.RegisterCommandsAsync();
         }

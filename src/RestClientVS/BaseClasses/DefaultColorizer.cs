@@ -3,9 +3,9 @@ using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace RestClientVS
 {
-    public class RestColorizer : Colorizer
+    public class DefaultColorizer : Colorizer
     {
-        public RestColorizer(LanguageService svc, IVsTextLines buffer, IScanner scanner) :
+        public DefaultColorizer(LanguageService svc, IVsTextLines buffer, IScanner scanner) :
             base(svc, buffer, scanner)
         { }
     }
