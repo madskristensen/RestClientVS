@@ -1,13 +1,29 @@
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Tagging;
+using Microsoft.VisualStudio.Utilities;
 using RestClient;
+using RestClientVS;
 using RestClientVS.Parsing;
 
 namespace MarkdownEditor.Outlining
 {
-    public class RestOutliningTagger : ITagger<IOutliningRegionTag>
+    [Export(typeof(ITaggerProvider))]
+    [TagType(typeof(IStructureTag))]
+    [ContentType(RestLanguage.LanguageName)]
+    [Name(nameof(RestOutliningProvider))]
+    public class RestOutliningProvider : ITaggerProvider
+    {
+        public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
+        {
+            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestOutliningTagger(buffer)) as ITagger<T>;
+        }
+    }
+
+    public class RestOutliningTagger : ITagger<IStructureTag>
     {
         private Document _doc;
         private bool _isProcessing;
@@ -26,7 +42,7 @@ namespace MarkdownEditor.Outlining
             ParseDocument();
         }
 
-        public IEnumerable<ITagSpan<IOutliningRegionTag>> GetTags(NormalizedSnapshotSpanCollection spans)
+        public IEnumerable<ITagSpan<IStructureTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
             if (spans.Count == 0 || _doc == null)
             {
@@ -46,10 +62,21 @@ namespace MarkdownEditor.Outlining
             }
         }
 
-        private static TagSpan<IOutliningRegionTag> CreateTag(SnapshotSpan span, string text, string tooltip = null)
+        private static TagSpan<IStructureTag> CreateTag(SnapshotSpan span, string text, string tooltip = null)
         {
-            var tag = new OutliningRegionTag(false, false, text, tooltip);
-            return new TagSpan<IOutliningRegionTag>(span, tag);
+            //var tag = new StructureTag(span.Snapshot, false, false, text, tooltip);
+
+            var structureTag = new StructureTag(
+                        span.Snapshot,
+                        outliningSpan: span,
+                        guideLineSpan: span,
+                        guideLineHorizontalAnchor: span.Start,
+                        type: PredefinedStructureTagTypes.Structural,
+                        isCollapsible: true,
+                        collapsedForm: text,
+                        collapsedHintForm: tooltip);
+
+            return new TagSpan<IStructureTag>(span, structureTag);
         }
 
         private void ParseDocument()

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,12 +10,28 @@ using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Adornments;
+using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
+using Microsoft.VisualStudio.Utilities;
 using RestClient;
 using RestClientVS.Parsing;
 
 namespace RestClientVS.Completion
 {
+    [Export(typeof(IAsyncCompletionSourceProvider))]
+    [Name(nameof(RestCompletionSourceProvider))]
+    [ContentType(RestLanguage.LanguageName)]
+    internal class RestCompletionSourceProvider : IAsyncCompletionSourceProvider
+    {
+        [Import]
+        private ITextStructureNavigatorSelectorService StructureNavigator { get; set; }
+
+        public IAsyncCompletionSource GetOrCreate(ITextView textView)
+        {
+            return textView.Properties.GetOrCreateSingletonProperty(() => new RestCompletionSource(StructureNavigator));
+        }
+    }
+
     public class RestCompletionSource : IAsyncCompletionSource
     {
         private readonly ITextStructureNavigatorSelectorService _structureNavigator;
@@ -35,12 +52,26 @@ namespace RestClientVS.Completion
             SnapshotPoint lineStart = line.Start;
             Token token = GetPreviousToken(document, lineStart, out var hasEmptyLine);
 
-            // HTTP Method
             if (applicableToSpan.Start == lineStart) // only trigger on beginning of line
             {
+                // HTTP Method
                 if (token == null || token is Variable || (token is Comment comment && comment.IsSeparator))
                 {
-                    return Task.FromResult(ConvertToCompletionItems(CompletionCatalog.HttpMethods, _httpMethodIcon));
+                    return Task.FromResult(ConvertToCompletionItems(RestCompletionCatalog.HttpMethods, _httpMethodIcon));
+                }
+
+                // HTTP Headers
+                if (!hasEmptyLine && (token is Header || token is RestClient.Url))
+                {
+                    var spanBeforeCaret = new SnapshotSpan(lineStart, triggerLocation);
+                    var textBeforeCaret = triggerLocation.Snapshot.GetText(spanBeforeCaret);
+                    var colonIndex = textBeforeCaret.IndexOf(':');
+                    var colonExistsBeforeCaret = colonIndex != -1;
+
+                    if (!colonExistsBeforeCaret)
+                    {
+                        return Task.FromResult(ConvertToCompletionItems(RestCompletionCatalog.HttpHeaderNames, _headerNameIcon));
+                    }
                 }
             }
 
@@ -50,20 +81,6 @@ namespace RestClientVS.Completion
             if (currentReference != null)
             {
                 return Task.FromResult(ConvertToCompletionItems(document.Variables, _referenceIcon));
-            }
-
-            // HTTP Headers
-            if (!hasEmptyLine && (token is Header || token is RestClient.Url))
-            {
-                var spanBeforeCaret = new SnapshotSpan(lineStart, triggerLocation);
-                var textBeforeCaret = triggerLocation.Snapshot.GetText(spanBeforeCaret);
-                var colonIndex = textBeforeCaret.IndexOf(':');
-                var colonExistsBeforeCaret = colonIndex != -1;
-
-                if (!colonExistsBeforeCaret)
-                {
-                    return Task.FromResult(ConvertToCompletionItems(CompletionCatalog.HttpHeaderNames, _headerNameIcon));
-                }
             }
 
             //// User is likely in the key portion of the pair

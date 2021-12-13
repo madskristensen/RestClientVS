@@ -2,7 +2,7 @@
 
 namespace RestClientVS.Completion
 {
-    public class CompletionCatalog
+    public class RestCompletionCatalog
     {
         public static IDictionary<string, string> HttpMethods = new Dictionary<string, string>()
         {

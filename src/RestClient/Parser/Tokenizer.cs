@@ -62,9 +62,13 @@ namespace RestClient
                 return ParseUrlToken(start, line);
             }
             // Header
-            else if (trimmedLine.Contains(":") && (_document.Tokens.Last() is Header || _document.Tokens.Last() is Url || _document.Tokens.Last() is Comment))
+            else if (trimmedLine.Contains(":") && _document.Tokens.Any())
             {
-                return ParseRequestHeaders(start, line);
+                Token? last = _document.Tokens.Last();
+                if (last is Header || last is Url || last is Comment)
+                {
+                    return ParseRequestHeaders(start, line);
+                }
             }
 
             return null;

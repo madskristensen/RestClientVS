@@ -1,22 +1,34 @@
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Utilities;
 using RestClient;
 using RestClientVS.Parsing;
-using RestClientVS.SuggestedActions;
 
-namespace RestClientVS
+namespace RestClientVS.SuggestedActions
 {
-    internal class SuggestedActionsSource : ISuggestedActionsSource
+    [Export(typeof(ISuggestedActionsSourceProvider))]
+    [Name(nameof(RestSuggestedActionsSourceProvider))]
+    [ContentType(RestLanguage.LanguageName)]
+    internal class RestSuggestedActionsSourceProvider : ISuggestedActionsSourceProvider
+    {
+        public ISuggestedActionsSource CreateSuggestedActionsSource(ITextView textView, ITextBuffer textBuffer)
+        {
+            return textView.Properties.GetOrCreateSingletonProperty(() => new RestSuggestedActionsSource(textView));
+        }
+    }
+
+    internal class RestSuggestedActionsSource : ISuggestedActionsSource
     {
         private readonly ITextView _view;
         private Request _request;
 
-        public SuggestedActionsSource(ITextView view)
+        public RestSuggestedActionsSource(ITextView view)
         {
             _view = view;
         }

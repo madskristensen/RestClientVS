@@ -1,16 +1,32 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Utilities;
 using RestClient;
 using RestClientVS.Parsing;
 
 namespace RestClientVS.Classify
 {
+    [Export(typeof(IClassifierProvider))]
+    [ContentType(RestLanguage.LanguageName)]
+    [Name(nameof(RestClassifierProvider))]
+    internal class RestClassifierProvider : IClassifierProvider
+    {
+        [Import]
+        private IClassificationTypeRegistryService classificationRegistry { get; set; }
+
+        public IClassifier GetClassifier(ITextBuffer buffer)
+        {
+            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestClassifier(buffer, classificationRegistry));
+        }
+    }
+
     internal class RestClassifier : IClassifier
     {
-        private readonly IClassificationType _varAt, _varName, _varValue, _method, _url, _headerName, _operator, _headerValue, _comment, _body, _refCurly, _refValue;
+        private static IClassificationType _varAt, _varName, _varValue, _method, _url, _headerName, _operator, _headerValue, _comment, _body, _refCurly, _refValue;
         private readonly ITextBuffer _buffer;
         private bool _isProcessing;
         private Document _doc;
@@ -19,18 +35,21 @@ namespace RestClientVS.Classify
         {
             _buffer = buffer;
 
-            _varAt = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
-            _varName = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
-            _varValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
-            _method = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupNode);
-            _url = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
-            _headerName = registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
-            _headerValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Literal);
-            _operator = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
-            _comment = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
-            _body = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
-            _refCurly = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
-            _refValue = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupAttribute);
+            if (_varAt == null)
+            {
+                _varAt = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
+                _varName = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
+                _varValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
+                _method = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupNode);
+                _url = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
+                _headerName = registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
+                _headerValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Literal);
+                _operator = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
+                _comment = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
+                _body = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
+                _refCurly = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
+                _refValue = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupAttribute);
+            }
 
             ParseDocument();
 

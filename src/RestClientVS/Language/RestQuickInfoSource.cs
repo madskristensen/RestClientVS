@@ -1,18 +1,31 @@
-﻿using System.Linq;
+﻿using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Utilities;
 using RestClient;
 using RestClientVS.Parsing;
 
 namespace RestClientVS.QuickInfo
 {
-    internal sealed class VariableQuickInfoSource : IAsyncQuickInfoSource
+    [Export(typeof(IAsyncQuickInfoSourceProvider))]
+    [Name(nameof(RestQuickInfoSourceProvider))]
+    [ContentType(RestLanguage.LanguageName)]
+    internal sealed class RestQuickInfoSourceProvider : IAsyncQuickInfoSourceProvider
+    {
+        public IAsyncQuickInfoSource TryCreateQuickInfoSource(ITextBuffer buffer)
+        {
+            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestQuickInfoSource(buffer));
+        }
+    }
+
+    internal sealed class RestQuickInfoSource : IAsyncQuickInfoSource
     {
         private readonly ITextBuffer _buffer;
 
-        public VariableQuickInfoSource(ITextBuffer buffer)
+        public RestQuickInfoSource(ITextBuffer buffer)
         {
             _buffer = buffer;
         }
