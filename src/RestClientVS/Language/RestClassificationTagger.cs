@@ -82,9 +82,12 @@ namespace RestClientVS.Classify
 
                     foreach (Span range in all.Keys)
                     {
-                        var snapspan = new SnapshotSpan(span.Snapshot, range);
-                        var ct = new ClassificationTag(all[range]);
-                        list.Add(new TagSpan<IClassificationTag>(snapspan, ct));
+                        if (range.End <= span.Snapshot.Length)
+                        {
+                            var snapspan = new SnapshotSpan(span.Snapshot, range);
+                            var ct = new ClassificationTag(all[range]);
+                            list.Add(new TagSpan<IClassificationTag>(snapspan, ct));
+                        }
                     }
                 }
             }

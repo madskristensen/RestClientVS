@@ -6,12 +6,12 @@ using RestClient;
 
 namespace RestClientVS
 {
-    public static class DocumentFactory
+    public class DocumentFactory
     {
         public static object _syncRoot = new();
         private static readonly ConditionalWeakTable<ITextSnapshot, Document> _cachedDocuments = new();
 
-        public static Document GetDocument(this ITextBuffer buffer)
+        public static Document GetDocument(ITextBuffer buffer)
         {
             lock (_syncRoot)
             {

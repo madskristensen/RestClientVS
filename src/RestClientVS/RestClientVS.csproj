@@ -59,6 +59,7 @@
     <Compile Include="BaseClasses\LanguageBase.cs" />
     <Compile Include="BaseClasses\DefaultAuthoringScope.cs" />
     <Compile Include="BaseClasses\DefaultColorizer.cs" />
+    <Compile Include="Language\RestIntratextAdornmentTagger.cs" />
     <Compile Include="Language\RestLanguage.cs" />
     <Compile Include="BaseClasses\DefaultSource.cs" />
     <Compile Include="Language\RestErrorTagger.cs" />
@@ -75,8 +76,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>source.extension.vsixmanifest</DependentUpon>
     </Compile>
-    <Compile Include="SuggestedActions\SendRequestAction.cs" />
-    <Compile Include="SuggestedActions\RestSuggestedActionsSource.cs" />
     <Compile Include="VSCommandTable.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -106,6 +105,8 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Design" />

@@ -8,7 +8,7 @@
 
   <Commands package="RestClientVS">
     <Groups>
-      <Group guid="RestClientVS" id="MyMenuGroup" priority="0x0600">
+      <Group guid="RestClientVS" id="RestCodeWin" priority="0x0100">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
       </Group>
     </Groups>
@@ -16,8 +16,8 @@
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
     <Buttons>
-      <Button guid="RestClientVS" id="MyCommand" priority="0x0100" type="Button">
-        <Parent guid="RestClientVS" id="MyMenuGroup" />
+      <Button guid="RestClientVS" id="SendRequest" priority="0x0200" type="Button">
+        <Parent guid="RestClientVS" id="RestCodeWin" />
         <Icon guid="ImageCatalogGuid" id="HTTPSend" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <CommandFlag>DefaultDisabled</CommandFlag>
@@ -31,12 +31,16 @@
     </Buttons>
   </Commands>
 
+  <KeyBindings>
+    <KeyBinding guid="RestClientVS" id="SendRequest" editor="RestEditorFactory" key1="S" mod1="Control Alt" />
+  </KeyBindings>
+
   <Symbols>
     <GuidSymbol name="RestEditorFactory" value="{ed091b30-0d58-4343-9c24-4aad5c417422}" />
     
     <GuidSymbol name="RestClientVS" value="{bb294b08-c71b-4feb-8772-5a10f5b8b36c}">
-      <IDSymbol name="MyMenuGroup" value="0x0001" />
-      <IDSymbol name="MyCommand" value="0x0100" />
+      <IDSymbol name="RestCodeWin" value="0x0001" />
+      <IDSymbol name="SendRequest" value="0x0100" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

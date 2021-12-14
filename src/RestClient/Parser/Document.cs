@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RestClient
@@ -37,13 +38,14 @@ namespace RestClient
             parser.Parse(lines);
 
             doc.CreateHierarchyOfChildren();
-            doc.ValidateReferences();
+            doc.ValidateDocument();
 
             return doc;
         }
 
-        private void ValidateReferences()
+        private void ValidateDocument()
         {
+            // Variable references
             foreach (Token? token in Tokens)
             {
                 foreach (Reference reference in token.References)
@@ -52,6 +54,17 @@ namespace RestClient
                     {
                         reference.Errors.Add($"The variable \"{reference.Value.Text}\" is not defined.");
                     }
+                }
+            }
+
+            // URLs
+            foreach (Url? url in Tokens.OfType<Url>())
+            {
+                var uri = url.Uri?.ExpandVariables();
+
+                if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
+                {
+                    url.Errors.Add($"\"{uri}\" is not a valid absolute URI");
                 }
             }
         }

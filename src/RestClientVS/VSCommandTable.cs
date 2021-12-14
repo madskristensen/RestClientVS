@@ -23,7 +23,7 @@ namespace RestClientVS
     /// </summary>
     internal sealed partial class PackageIds
     {
-        public const int MyMenuGroup = 0x0001;
-        public const int MyCommand = 0x0100;
+        public const int RestCodeWin = 0x0001;
+        public const int SendRequest = 0x0100;
     }
 }
