@@ -45,8 +45,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Language\BraceCompletionContext.cs" />
-    <Compile Include="Language\RestClassifier.cs" />
+    <Compile Include="BaseClasses\BraceCompletionBase.cs" />
+    <Compile Include="BaseClasses\CompletionCommitManagerBase.cs" />
+    <Compile Include="Language\RestBraceCompletion.cs" />
+    <Compile Include="Language\RestClassificationTagger.cs" />
     <Compile Include="Commands\GoToDefinitionCommand.cs" />
     <Compile Include="Commands\UncommentCommand.cs" />
     <Compile Include="Commands\CommentCommand.cs" />
@@ -59,9 +61,10 @@
     <Compile Include="BaseClasses\DefaultColorizer.cs" />
     <Compile Include="Language\RestLanguage.cs" />
     <Compile Include="BaseClasses\DefaultSource.cs" />
+    <Compile Include="Language\RestErrorTagger.cs" />
     <Compile Include="Options\General.cs" />
-    <Compile Include="Language\RestOutliningProvider.cs" />
-    <Compile Include="ProvideBraceCompletionAttribute.cs" />
+    <Compile Include="Language\RestStructureTagger.cs" />
+    <Compile Include="BaseClasses\Attributes\ProvideBraceCompletionAttribute.cs" />
     <Compile Include="Parsing\RestFactory.cs" />
     <Compile Include="Parsing\ParsingEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

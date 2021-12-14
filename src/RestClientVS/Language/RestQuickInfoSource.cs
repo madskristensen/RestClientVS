@@ -11,14 +11,12 @@ using RestClientVS.Parsing;
 namespace RestClientVS.QuickInfo
 {
     [Export(typeof(IAsyncQuickInfoSourceProvider))]
-    [Name(nameof(RestQuickInfoSourceProvider))]
     [ContentType(RestLanguage.LanguageName)]
+    [Name(RestLanguage.LanguageName)]
     internal sealed class RestQuickInfoSourceProvider : IAsyncQuickInfoSourceProvider
     {
-        public IAsyncQuickInfoSource TryCreateQuickInfoSource(ITextBuffer buffer)
-        {
-            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestQuickInfoSource(buffer));
-        }
+        public IAsyncQuickInfoSource TryCreateQuickInfoSource(ITextBuffer buffer) =>
+            buffer.Properties.GetOrCreateSingletonProperty(() => new RestQuickInfoSource(buffer));
     }
 
     internal sealed class RestQuickInfoSource : IAsyncQuickInfoSource
@@ -30,7 +28,6 @@ namespace RestClientVS.QuickInfo
             _buffer = buffer;
         }
 
-        // This is called on a background thread.
         public Task<QuickInfoItem> GetQuickInfoItemAsync(IAsyncQuickInfoSession session, CancellationToken cancellationToken)
         {
             SnapshotPoint? triggerPoint = session.GetTriggerPoint(_buffer.CurrentSnapshot);

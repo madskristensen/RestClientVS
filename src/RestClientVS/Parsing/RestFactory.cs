@@ -19,15 +19,9 @@ namespace RestClientVS.Parsing
                 {
                     IEnumerable<ITextSnapshotLine> lines = key.Lines;
                     var textLines = lines.Select(line => line.GetTextIncludingLineBreak()).ToArray();
-                    var document = Document.FromLines(textLines);
-
-                    Parsed?.Invoke(buffer, new ParsingEventArgs(document, buffer));
-
-                    return document;
+                    return Document.FromLines(textLines);
                 });
             }
         }
-
-        public static event EventHandler<ParsingEventArgs> Parsed;
     }
 }

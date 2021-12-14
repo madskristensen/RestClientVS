@@ -6,26 +6,19 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.BraceCompletion;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Utilities;
 
 namespace RestClientVS
 {
-    [Export(typeof(IBraceCompletionContextProvider))]
-    [BracePair('(', ')')]
-    [BracePair('[', ']')]
-    [BracePair('{', '}')]
-    [BracePair('"', '"')]
-    [ContentType(RestLanguage.LanguageName)]
-    internal sealed class BraceCompletionContextProvider : IBraceCompletionContextProvider
+    public abstract class BraceCompletionBase : IBraceCompletionContextProvider
     {
         [Import]
-        private IClassifierAggregatorService ClassifierService { get; set; }
+        private readonly IClassifierAggregatorService _classifierService = default;
 
         public bool TryCreateContext(ITextView textView, SnapshotPoint openingPoint, char openingBrace, char closingBrace, out IBraceCompletionContext context)
         {
             if (IsValidBraceCompletionContext(openingPoint))
             {
-                context = new BraceCompletionContext();
+                context = new DefaultBraceCompletionContext();
                 return true;
             }
             else
@@ -41,7 +34,7 @@ namespace RestClientVS
 
             if (openingPoint.Position > 0)
             {
-                IList<ClassificationSpan> classificationSpans = ClassifierService.GetClassifier(openingPoint.Snapshot.TextBuffer)
+                IList<ClassificationSpan> classificationSpans = _classifierService.GetClassifier(openingPoint.Snapshot.TextBuffer)
                                                            .GetClassificationSpans(new SnapshotSpan(openingPoint - 1, 1));
 
                 foreach (ClassificationSpan span in classificationSpans)
@@ -60,13 +53,9 @@ namespace RestClientVS
         }
     }
 
-    [Export(typeof(IBraceCompletionContext))]
-    internal class BraceCompletionContext : IBraceCompletionContext
+    internal class DefaultBraceCompletionContext : IBraceCompletionContext
     {
-        public bool AllowOverType(IBraceCompletionSession session)
-        {
-            return true;
-        }
+        public bool AllowOverType(IBraceCompletionSession session) => true;
 
         public void Finish(IBraceCompletionSession session)
         {

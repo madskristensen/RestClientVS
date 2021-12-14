@@ -21,37 +21,11 @@ namespace RestClient
 
         public virtual int Length => End - Start;
 
-        public List<Reference> Variables { get; } = new List<Reference>();
+        public List<Reference> References { get; } = new List<Reference>();
 
-        public Token? Previous
-        {
-            get
-            {
-                var index = Document.Tokens.IndexOf(this);
+        public List<string> Errors = new();
 
-                if (index < 1)
-                {
-                    return null;
-                }
-
-                return Document.Tokens[index - 1];
-            }
-        }
-
-        public Token? Next
-        {
-            get
-            {
-                var index = Document.Tokens.IndexOf(this);
-
-                if (index == Document.Tokens.Count - 1)
-                {
-                    return null;
-                }
-
-                return Document.Tokens[index + 1];
-            }
-        }
+        public bool IsValid => Errors.Count == 0;
 
         public virtual bool IntersectsWith(int position)
         {

@@ -35,7 +35,7 @@ namespace RestClient
             var trimmedLine = line.Trim();
 
             // Comment
-            if (trimmedLine.StartsWith("#"))
+            if (trimmedLine.StartsWith(Constants.CommentChar.ToString()))
             {
                 return new Comment(start, line, _document);
             }
@@ -198,7 +198,7 @@ namespace RestClient
                     Close = new TextSpan(start + closeGroup.Index, closeGroup.Value, _document),
                 };
 
-                token.Variables.Add(reference);
+                token.References.Add(reference);
                 //_document.Tokens.Add(reference);
             }
         }

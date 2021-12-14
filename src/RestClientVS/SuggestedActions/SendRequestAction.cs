@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -60,6 +61,8 @@ namespace RestClientVS.SuggestedActions
                 await _pane.ActivateAsync();
                 await _pane.ClearAsync();
                 await _pane.WriteLineAsync(DateTime.Now.ToString() + " - " + _request.Url.Uri.ExpandVariables() + Environment.NewLine);
+
+                SendKeys.Send("{ESC}"); // puts focus back in the editor
 
                 await VS.StatusBar.ShowMessageAsync($"Sending request to {_request.Url.Uri.ExpandVariables()}...");
                 await VS.StatusBar.StartAnimationAsync(StatusAnimation.Sync);

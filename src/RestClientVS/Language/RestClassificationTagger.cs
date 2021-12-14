@@ -4,34 +4,34 @@ using System.Linq;
 using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 using RestClient;
 using RestClientVS.Parsing;
 
 namespace RestClientVS.Classify
 {
-    [Export(typeof(IClassifierProvider))]
+    [Export(typeof(ITaggerProvider))]
+    [TagType(typeof(IClassificationTag))]
     [ContentType(RestLanguage.LanguageName)]
-    [Name(nameof(RestClassifierProvider))]
-    internal class RestClassifierProvider : IClassifierProvider
+    [Name(RestLanguage.LanguageName)]
+    internal class RestClassificationTaggerProvider : ITaggerProvider
     {
         [Import]
-        private IClassificationTypeRegistryService classificationRegistry { get; set; }
+        private readonly IClassificationTypeRegistryService _classificationRegistry = default;
 
-        public IClassifier GetClassifier(ITextBuffer buffer)
-        {
-            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestClassifier(buffer, classificationRegistry));
-        }
+        public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag =>
+            buffer.Properties.GetOrCreateSingletonProperty(() => new RestClassificationTagger(buffer, _classificationRegistry)) as ITagger<T>;
     }
 
-    internal class RestClassifier : IClassifier
+    internal class RestClassificationTagger : ITagger<IClassificationTag>, IDisposable
     {
         private static IClassificationType _varAt, _varName, _varValue, _method, _url, _headerName, _operator, _headerValue, _comment, _body, _refCurly, _refValue;
         private readonly ITextBuffer _buffer;
-        private bool _isProcessing;
         private Document _doc;
+        private bool _isDisposed;
 
-        internal RestClassifier(ITextBuffer buffer, IClassificationTypeRegistryService registry)
+        internal RestClassificationTagger(ITextBuffer buffer, IClassificationTypeRegistryService registry)
         {
             _buffer = buffer;
 
@@ -51,35 +51,43 @@ namespace RestClientVS.Classify
                 _refValue = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupAttribute);
             }
 
-            ParseDocument();
+            ParseDocumentAsync().FireAndForget();
 
-            _buffer.Changed += bufferChanged;
+            if (_buffer is ITextBuffer2 buffer2)
+            {
+                buffer2.ChangedOnBackground += bufferChanged;
+            }
         }
 
         private void bufferChanged(object sender, TextContentChangedEventArgs e)
         {
-            ParseDocument();
+            ParseDocumentAsync().FireAndForget();
         }
 
-        public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
+
+        public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            var list = new List<ClassificationSpan>();
+            var list = new List<ITagSpan<IClassificationTag>>();
 
-            if (_doc == null || _isProcessing || span.IsEmpty)
+            foreach (SnapshotSpan span in spans)
             {
-                return list;
-            }
-
-            Token[] tokens = _doc.Tokens.Where(t => t.Start < span.End && t.End > span.Start).ToArray();
-
-            foreach (Token token in tokens)
-            {
-                Dictionary<Span, IClassificationType> all = GetClassificationTypes(token);
-
-                foreach (Span range in all.Keys)
+                if (_doc == null || span.IsEmpty)
                 {
-                    var snapspan = new SnapshotSpan(span.Snapshot, range);
-                    list.Add(new ClassificationSpan(snapspan, all[range]));
+                    return list;
+                }
+
+                Token[] tokens = _doc.Tokens.Where(t => t.Start < span.End && t.End > span.Start).ToArray();
+
+                foreach (Token token in tokens)
+                {
+                    Dictionary<Span, IClassificationType> all = GetClassificationTypes(token);
+
+                    foreach (Span range in all.Keys)
+                    {
+                        var snapspan = new SnapshotSpan(span.Snapshot, range);
+                        var ct = new ClassificationTag(all[range]);
+                        list.Add(new TagSpan<IClassificationTag>(snapspan, ct));
+                    }
                 }
             }
 
@@ -133,7 +141,7 @@ namespace RestClientVS.Classify
             Span tokenSpan = token.ToSimpleSpan();
             spans.Add(tokenSpan, type);
 
-            foreach (RestClient.Reference variable in token.Variables)
+            foreach (RestClient.Reference variable in token.References)
             {
                 spans.Add(variable.Open.ToSimpleSpan(), _refCurly);
                 spans.Add(variable.Value.ToSimpleSpan(), _refValue);
@@ -141,29 +149,28 @@ namespace RestClientVS.Classify
             }
         }
 
-        private void ParseDocument()
+        private Task ParseDocumentAsync()
         {
-            if (_isProcessing)
-            {
-                return;
-            }
+            _doc = _buffer.GetDocument();
+            var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
+            TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(span));
 
-            _isProcessing = true;
-
-            ThreadHelper.JoinableTaskFactory.RunAsync(() =>
-            {
-                _doc = _buffer.GetDocument();
-
-                var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
-
-                ClassificationChanged?.Invoke(this, new ClassificationChangedEventArgs(span));
-
-                _isProcessing = false;
-
-                return Task.CompletedTask;
-            }).FireAndForget();
+            return Task.CompletedTask;
         }
 
-        public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
+        public void Dispose()
+        {
+            if (!_isDisposed)
+            {
+                if (_buffer is ITextBuffer2 buffer2)
+                {
+                    buffer2.ChangedOnBackground += bufferChanged;
+                }
+            }
+
+            _isDisposed = true;
+        }
+
+        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
     }
 }

@@ -14,32 +14,33 @@ namespace MarkdownEditor.Outlining
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(IStructureTag))]
     [ContentType(RestLanguage.LanguageName)]
-    [Name(nameof(RestOutliningProvider))]
-    public class RestOutliningProvider : ITaggerProvider
+    [Name(RestLanguage.LanguageName)]
+    public class RestStructureTaggerProvider : ITaggerProvider
     {
-        public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
-        {
-            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestOutliningTagger(buffer)) as ITagger<T>;
-        }
+        public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag =>
+            buffer.Properties.GetOrCreateSingletonProperty(() => new RestStructureTagger(buffer)) as ITagger<T>;
     }
 
-    public class RestOutliningTagger : ITagger<IStructureTag>
+    public class RestStructureTagger : ITagger<IStructureTag>, IDisposable
     {
         private Document _doc;
-        private bool _isProcessing;
+        private bool _isDisposed;
         private readonly ITextBuffer _buffer;
 
-        public RestOutliningTagger(ITextBuffer buffer)
+        public RestStructureTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
-            ParseDocument();
+            ParseDocumentAsync().FireAndForget();
 
-            _buffer.Changed += BufferChanged;
+            if (buffer is ITextBuffer2 buffer2)
+            {
+                buffer2.ChangedOnBackground += BufferChanged;
+            }
         }
 
         private void BufferChanged(object sender, TextContentChangedEventArgs e)
         {
-            ParseDocument();
+            ParseDocumentAsync().FireAndForget();
         }
 
         public IEnumerable<ITagSpan<IStructureTag>> GetTags(NormalizedSnapshotSpanCollection spans)
@@ -79,26 +80,26 @@ namespace MarkdownEditor.Outlining
             return new TagSpan<IStructureTag>(span, structureTag);
         }
 
-        private void ParseDocument()
+        private Task ParseDocumentAsync()
         {
-            if (_isProcessing)
+            _doc = _buffer.GetDocument();
+            var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
+            TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(span));
+
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            if (!_isDisposed)
             {
-                return;
+                if (_buffer is ITextBuffer2 buffer2)
+                {
+                    buffer2.ChangedOnBackground += BufferChanged;
+                }
             }
 
-            _isProcessing = true;
-
-            ThreadHelper.JoinableTaskFactory.RunAsync(() =>
-            {
-                _doc = _buffer.GetDocument();
-
-                var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
-
-                TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(span));
-                _isProcessing = false;
-                return Task.CompletedTask;
-
-            }).FireAndForget();
+            _isDisposed = true;
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;

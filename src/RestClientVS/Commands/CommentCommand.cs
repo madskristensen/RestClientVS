@@ -25,7 +25,7 @@ namespace RestClientVS.Commands
 
             foreach (ITextViewLine line in lines.Reverse())
             {
-                args.TextView.TextBuffer.Insert(line.Start.Position, "#");
+                args.TextView.TextBuffer.Insert(line.Start.Position, RestClient.Constants.CommentChar.ToString());
             }
 
             return true;

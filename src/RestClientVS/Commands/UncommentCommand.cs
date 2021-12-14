@@ -26,7 +26,7 @@ namespace RestClientVS.Commands
             foreach (ITextViewLine line in lines.Reverse())
             {
                 var span = Span.FromBounds(line.Start, line.End);
-                var text = args.TextView.TextBuffer.CurrentSnapshot.GetText(span).TrimStart('#');
+                var text = args.TextView.TextBuffer.CurrentSnapshot.GetText(span).TrimStart(RestClient.Constants.CommentChar);
                 args.TextView.TextBuffer.Replace(span, text);
             }
 

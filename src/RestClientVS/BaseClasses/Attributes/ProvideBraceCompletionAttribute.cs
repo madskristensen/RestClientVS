@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace MarkdownEditor
+namespace RestClientVS
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class ProvideBraceCompletionAttribute : RegistrationAttribute

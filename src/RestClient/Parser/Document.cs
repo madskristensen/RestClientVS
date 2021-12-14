@@ -37,8 +37,23 @@ namespace RestClient
             parser.Parse(lines);
 
             doc.CreateHierarchyOfChildren();
+            doc.ValidateReferences();
 
             return doc;
+        }
+
+        private void ValidateReferences()
+        {
+            foreach (Token? token in Tokens)
+            {
+                foreach (Reference reference in token.References)
+                {
+                    if (Variables != null && reference.Value != null && !Variables.ContainsKey(reference.Value.Text))
+                    {
+                        reference.Errors.Add($"The variable \"{reference.Value.Text}\" is not defined.");
+                    }
+                }
+            }
         }
 
         private void CreateHierarchyOfChildren()
@@ -159,7 +174,7 @@ namespace RestClient
 
         private Token? GetVariableFromPosition(Token token, int position)
         {
-            return token.Variables.FirstOrDefault(v => v.IntersectsWith(position));
+            return token.References.FirstOrDefault(v => v.IntersectsWith(position));
         }
     }
 }

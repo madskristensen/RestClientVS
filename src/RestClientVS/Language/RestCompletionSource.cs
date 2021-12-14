@@ -19,17 +19,15 @@ using RestClientVS.Parsing;
 namespace RestClientVS.Completion
 {
     [Export(typeof(IAsyncCompletionSourceProvider))]
-    [Name(nameof(RestCompletionSourceProvider))]
     [ContentType(RestLanguage.LanguageName)]
+    [Name(RestLanguage.LanguageName)]
     internal class RestCompletionSourceProvider : IAsyncCompletionSourceProvider
     {
         [Import]
-        private ITextStructureNavigatorSelectorService StructureNavigator { get; set; }
+        private readonly ITextStructureNavigatorSelectorService _structureNavigator = default;
 
-        public IAsyncCompletionSource GetOrCreate(ITextView textView)
-        {
-            return textView.Properties.GetOrCreateSingletonProperty(() => new RestCompletionSource(StructureNavigator));
-        }
+        public IAsyncCompletionSource GetOrCreate(ITextView textView) =>
+            textView.Properties.GetOrCreateSingletonProperty(() => new RestCompletionSource(_structureNavigator));
     }
 
     public class RestCompletionSource : IAsyncCompletionSource
@@ -77,7 +75,7 @@ namespace RestClientVS.Completion
 
             // Variable references
             Token currentToken = document.Tokens.LastOrDefault(v => v.IntersectsWith(triggerLocation.Position));
-            RestClient.Reference currentReference = currentToken?.Variables.FirstOrDefault(v => v.IntersectsWith(triggerLocation.Position));
+            RestClient.Reference currentReference = currentToken?.References.FirstOrDefault(v => v.IntersectsWith(triggerLocation.Position));
             if (currentReference != null)
             {
                 return Task.FromResult(ConvertToCompletionItems(document.Variables, _referenceIcon));
@@ -154,7 +152,7 @@ namespace RestClientVS.Completion
             if (char.IsNumber(trigger.Character)         // a number
                 || char.IsPunctuation(trigger.Character) // punctuation
                 || trigger.Character == '\n'             // new line
-                || trigger.Character == '#'              // comment
+                || trigger.Character == Constants.CommentChar
                 || trigger.Reason == CompletionTriggerReason.Backspace
                 || trigger.Reason == CompletionTriggerReason.Deletion)
             {
@@ -176,7 +174,7 @@ namespace RestClientVS.Completion
 
             SnapshotSpan tokenSpan = FindTokenSpanAtPosition(triggerLocation);
 
-            if (triggerLocation.GetContainingLine().GetText().StartsWith("#", StringComparison.Ordinal))
+            if (triggerLocation.GetContainingLine().GetText().StartsWith(Constants.CommentChar.ToString(), StringComparison.Ordinal))
             {
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }

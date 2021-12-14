@@ -13,14 +13,12 @@ using RestClientVS.Parsing;
 namespace RestClientVS.SuggestedActions
 {
     [Export(typeof(ISuggestedActionsSourceProvider))]
-    [Name(nameof(RestSuggestedActionsSourceProvider))]
     [ContentType(RestLanguage.LanguageName)]
+    [Name(RestLanguage.LanguageName)]
     internal class RestSuggestedActionsSourceProvider : ISuggestedActionsSourceProvider
     {
-        public ISuggestedActionsSource CreateSuggestedActionsSource(ITextView textView, ITextBuffer textBuffer)
-        {
-            return textView.Properties.GetOrCreateSingletonProperty(() => new RestSuggestedActionsSource(textView));
-        }
+        public ISuggestedActionsSource CreateSuggestedActionsSource(ITextView textView, ITextBuffer textBuffer) =>
+            textView.Properties.GetOrCreateSingletonProperty(() => new RestSuggestedActionsSource(textView));
     }
 
     internal class RestSuggestedActionsSource : ISuggestedActionsSource
@@ -54,8 +52,7 @@ namespace RestClientVS.SuggestedActions
         }
 
         public void Dispose()
-        {
-        }
+        { }
 
         public bool TryGetTelemetryId(out Guid telemetryId)
         {
