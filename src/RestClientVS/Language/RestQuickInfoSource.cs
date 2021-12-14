@@ -6,7 +6,6 @@ using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 using RestClient;
-using RestClientVS.Parsing;
 
 namespace RestClientVS.QuickInfo
 {
@@ -37,7 +36,7 @@ namespace RestClientVS.QuickInfo
                 Document doc = _buffer.GetDocument();
                 var position = triggerPoint.Value.Position;
 
-                Token token = doc.Tokens.FirstOrDefault(t => t.IntersectsWith(position));
+                Token token = doc.Tokens.LastOrDefault(t => t.IntersectsWith(position));
 
                 if (token != null && token.Text.Contains("{{"))
                 {

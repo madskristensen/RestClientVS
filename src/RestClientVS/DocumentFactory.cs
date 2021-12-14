@@ -4,9 +4,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Text;
 using RestClient;
 
-namespace RestClientVS.Parsing
+namespace RestClientVS
 {
-    public static class RestFactory
+    public static class DocumentFactory
     {
         public static object _syncRoot = new();
         private static readonly ConditionalWeakTable<ITextSnapshot, Document> _cachedDocuments = new();

@@ -65,8 +65,7 @@
     <Compile Include="Options\General.cs" />
     <Compile Include="Language\RestStructureTagger.cs" />
     <Compile Include="BaseClasses\Attributes\ProvideBraceCompletionAttribute.cs" />
-    <Compile Include="Parsing\RestFactory.cs" />
-    <Compile Include="Parsing\ParsingEventArgs.cs" />
+    <Compile Include="DocumentFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Commands\SendRequestCommand.cs" />
     <Compile Include="Language\RestQuickInfoSource.cs" />

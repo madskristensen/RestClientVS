@@ -7,7 +7,6 @@ using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 using RestClient;
 using RestClientVS;
-using RestClientVS.Parsing;
 
 namespace MarkdownEditor.Outlining
 {

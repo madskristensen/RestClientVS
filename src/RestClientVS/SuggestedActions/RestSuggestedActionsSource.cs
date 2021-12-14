@@ -8,7 +8,6 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 using RestClient;
-using RestClientVS.Parsing;
 
 namespace RestClientVS.SuggestedActions
 {

@@ -7,7 +7,6 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 using RestClient;
-using RestClientVS.Parsing;
 
 namespace RestClientVS.Classify
 {
@@ -63,7 +62,6 @@ namespace RestClientVS.Classify
         {
             ParseDocumentAsync().FireAndForget();
         }
-
 
         public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
