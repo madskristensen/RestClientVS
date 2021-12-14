@@ -14,7 +14,7 @@ Any files with the extension `.http` is the entry point to creating HTTP request
 
 Here's an example of how to define the requests with variables and code comments.
 
-```
+```css
 @hostname = localhost
 @port = 8080
 @host = {{hostname}}:{{port}}
