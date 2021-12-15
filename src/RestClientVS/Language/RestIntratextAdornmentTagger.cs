@@ -69,12 +69,10 @@ namespace RestClientVS.Language
         {
             FrameworkElement element = new Label
             {
-                Content = "Send request",
-                FontSize = 14,
+                Content = "▶️",
                 FontWeight = FontWeights.SemiBold,
-                Foreground = Brushes.Gray,
+                Foreground = Brushes.Green,
                 Cursor = Cursors.Hand,
-                Margin = new Thickness(10, 3, 0, 0),
             };
 
             element.MouseLeftButtonUp += Element_MouseLeftButtonUp;

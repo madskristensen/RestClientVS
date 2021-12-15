@@ -62,10 +62,8 @@ namespace MarkdownEditor.Outlining
             }
         }
 
-        private static TagSpan<IStructureTag> CreateTag(SnapshotSpan span, string text, string tooltip = null)
+        private static TagSpan<IStructureTag> CreateTag(SnapshotSpan span, string text, string tooltip)
         {
-            //var tag = new StructureTag(span.Snapshot, false, false, text, tooltip);
-
             var structureTag = new StructureTag(
                         span.Snapshot,
                         outliningSpan: span,

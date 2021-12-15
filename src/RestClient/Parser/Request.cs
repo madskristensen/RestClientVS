@@ -22,6 +22,12 @@ namespace RestClient
             protected set => base.Text = value;
         }
 
+        public override string TextExcludingLineBreaks
+        {
+            get => Text.TrimEnd();
+            protected set => base.Text = value;
+        }
+
         public override int End
         {
             get

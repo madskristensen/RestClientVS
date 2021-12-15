@@ -44,17 +44,17 @@ namespace RestClient
             {
                 return ParseVariable(start, line);
             }
-            // Empty line
-            else if (string.IsNullOrWhiteSpace(line))
-            {
-                return new EmptyLine(start, line, _document);
-            }
             // Request body
-            else if (IsBodyToken())
+            else if (IsBodyToken(line))
             {
                 var token = new BodyToken(start, line, _document);
                 AddVariableReferences(token);
                 return token;
+            }
+            // Empty line
+            else if (string.IsNullOrWhiteSpace(line))
+            {
+                return new EmptyLine(start, line, _document);
             }
             // Request url
             else if (trimmedLine.Contains("://"))
@@ -74,9 +74,14 @@ namespace RestClient
             return null;
         }
 
-        private bool IsBodyToken()
+        private bool IsBodyToken(string line)
         {
             Token? last = _document.Tokens.LastOrDefault();
+
+            if (last != null && string.IsNullOrWhiteSpace(last.Text) && string.IsNullOrWhiteSpace(line))
+            {
+                return false;
+            }
 
             if (last is BodyToken)
             {

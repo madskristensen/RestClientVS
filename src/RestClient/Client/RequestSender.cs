@@ -11,7 +11,7 @@ namespace RestClient.Client
 
         public static async Task<RequestResult> SendAsync(Request request, TimeSpan timeOut, CancellationToken cancellationToken = default)
         {
-            RequestResult result = new();
+            RequestResult result = new() { RequestToken = request };
             HttpRequestMessage? requestMessage = BuildRequest(request, result);
 
             var handler = new HttpClientHandler

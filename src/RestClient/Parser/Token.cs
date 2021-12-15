@@ -8,18 +8,22 @@ namespace RestClient
         {
             Start = start;
             Text = text;
+            TextExcludingLineBreaks = text.TrimEnd();
             Document = document;
         }
 
         public int Start { get; }
 
         public virtual string Text { get; protected set; }
+        public virtual string TextExcludingLineBreaks { get; protected set; }
 
         public Document Document { get; }
 
         public virtual int End => Start + Text.Length;
+        public virtual int EndExcludingLineBreaks => Start + TextExcludingLineBreaks.Length;
 
         public virtual int Length => End - Start;
+        public virtual int LengthExcludingLineBreaks => EndExcludingLineBreaks - Start;
 
         public List<Reference> References { get; } = new List<Reference>();
 
@@ -30,6 +34,15 @@ namespace RestClient
         public virtual bool IntersectsWith(int position)
         {
             return Start <= position && End >= position;
+        }
+
+        public Token? Previous
+        {
+            get
+            {
+                var index = Document.Tokens.IndexOf(this);
+                return index > 0 ? Document.Tokens[index - 1] : null;
+            }
         }
 
         public string ExpandVariables()

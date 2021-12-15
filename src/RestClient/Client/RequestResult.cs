@@ -7,5 +7,6 @@ namespace RestClient.Client
         public HttpRequestMessage? Request { get; internal set; }
         public HttpResponseMessage? Response { get; internal set; }
         public string? ErrorMessage { get; internal set; }
+        public Request? RequestToken { get; internal set; }
     }
 }

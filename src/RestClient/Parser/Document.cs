@@ -100,9 +100,16 @@ namespace RestClient
                     }
                     else if (token is BodyToken body)
                     {
+                        if (string.IsNullOrWhiteSpace(body.Text))
+                        {
+                            continue;
+                        }
+
+                        var prevEmptyLine = body.Previous is BodyToken && string.IsNullOrWhiteSpace(body.Previous.Text) ? body.Previous.Text : "";
+
                         if (currentRequest.Body != null)
                         {
-                            currentRequest.Body.Increase(body.Text);
+                            currentRequest.Body.Increase(prevEmptyLine + body.Text);
                         }
                         else
                         {

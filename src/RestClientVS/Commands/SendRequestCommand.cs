@@ -10,7 +10,8 @@ namespace RestClientVS
     internal sealed class SendRequestCommand : BaseCommand<SendRequestCommand>
     {
         private OutputWindowPane _pane;
-        private static CancellationTokenSource _source = new();
+        private static string _lastRequest;
+        private static CancellationTokenSource _source;
 
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
@@ -24,7 +25,8 @@ namespace RestClientVS
 
                 if (request != null)
                 {
-                    _source.Cancel();
+                    _lastRequest = request.Text;
+                    _source?.Cancel();
                     _source = new CancellationTokenSource();
 
                     if (_pane == null)
@@ -36,13 +38,19 @@ namespace RestClientVS
 
                     await _pane.ActivateAsync();
                     await _pane.ClearAsync();
-                    await _pane.WriteLineAsync(DateTime.Now.ToString() + " - " + request.Url.Uri.ExpandVariables() + Environment.NewLine);
+                    await _pane.WriteLineAsync(DateTime.Now.ToString() + " - " + request.Url.ExpandVariables() + Environment.NewLine);
 
                     await VS.StatusBar.ShowMessageAsync($"Sending request to {request.Url.Uri.ExpandVariables()}...");
                     await VS.StatusBar.StartAnimationAsync(StatusAnimation.Sync);
 
                     General options = await General.GetLiveInstanceAsync();
                     RequestResult result = await RequestSender.SendAsync(request, TimeSpan.FromSeconds(options.Timeout), _source.Token);
+
+                    if (!string.IsNullOrEmpty(_lastRequest) && result.RequestToken.Text != _lastRequest)
+                    {
+                        // Prohibits multiple requests from writing at the same time.
+                        return;
+                    }
 
                     SendKeys.Send("{ESC}"); // puts focus back in the editor
 

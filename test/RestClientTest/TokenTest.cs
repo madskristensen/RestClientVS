@@ -160,21 +160,25 @@ namespace RestClientTest
         [Fact]
         public void BodyAfterComment()
         {
-            var text = new[] { @"PATCH https://{{host}}/authors/{{name}}",
-"Content-Type: at{{contentType}}svin",
-"#ost",
-"mads: ost",
-"",
-"{",
-"    \"content\": \"foo bar\",",
-"    \"created_at\": \"{{createdAt}}\",",
-"    \"modified_by\": \"{{modifiedBy}}\"",
-"}"};
+            var text = new[] { @"PATCH https://{{host}}/authors/{{name}}\r\n",
+                                "Content-Type: at{{contentType}}svin\r\n",
+                                "#ost\r\n",
+                                "mads: ost\r\n",
+                                "\r\n",
+                                "{\r\n",
+                                "    \"content\": \"foo bar\",\r\n",
+                                "    \"created_at\": \"{{createdAt}}\",\r\n",
+                                "\r\n",
+                                "    \"modified_by\": \"$test$\"\r\n",
+                                "}\r\n",
+                                "\r\n",};
 
             var doc = Document.FromLines(text);
             Request request = doc.Requests.First();
 
             Assert.NotNull(request.Body);
+            Assert.Contains("$test$", request.Body.Text);
+            Assert.EndsWith("}", request.Body.TextExcludingLineBreaks);
         }
 
         [Fact]
