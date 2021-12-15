@@ -256,7 +256,7 @@ namespace RestClient
 
                     requests.Add(currentRequest);
                     currentRequest?.Children?.Add(currentRequest.Method);
-                    currentRequest?.Children?.Add(currentRequest.Url);
+                    currentRequest?.Children?.Add(currentRequest.Url!);
                 }
 
                 else if (currentRequest != null)
@@ -271,7 +271,7 @@ namespace RestClient
 
                         currentRequest?.Headers?.Add(header);
                         currentRequest?.Children?.Add(header.Name);
-                        currentRequest?.Children?.Add(header.Value);
+                        currentRequest?.Children?.Add(header.Value!);
                     }
                     else if (token.Type == ItemType.Body)
                     {

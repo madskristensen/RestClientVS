@@ -56,7 +56,6 @@ You can also right-click to find the Send Request command or use the **Ctrl+Alt+
 
 You can set the timeout of the HTTP requests from the *Options* dialog.
 
-
 ![Options](art/options.png)
 
 ## License

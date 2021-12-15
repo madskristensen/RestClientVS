@@ -9,12 +9,12 @@ namespace RestClientTest
     public class VariableTest
     {
         [Theory]
-        [InlineData("@name=value", "name", "value")]
-        [InlineData("@name = value", "name", "value")]
-        [InlineData("@name= value", "name", "value")]
-        [InlineData("@name =value", "name", "value")]
-        [InlineData("@name\t=\t value", "name", "value")]
-        public async Task VariableDeclarations(string line, string name, string value)
+        [InlineData("@name=value", "value")]
+        [InlineData("@name = value", "value")]
+        [InlineData("@name= value", "value")]
+        [InlineData("@name =value", "value")]
+        [InlineData("@name\t=\t value", "value")]
+        public async Task VariableDeclarations(string line, string value)
         {
             var doc = Document.FromLines(line);
             await doc.WaitForParsingCompleteAsync();
