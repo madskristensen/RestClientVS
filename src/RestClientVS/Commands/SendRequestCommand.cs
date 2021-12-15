@@ -38,7 +38,7 @@ namespace RestClientVS
 
                     await _pane.ActivateAsync();
                     await _pane.ClearAsync();
-                    await _pane.WriteLineAsync(DateTime.Now.ToString() + " - " + request.Url.ExpandVariables() + Environment.NewLine);
+                    await _pane.WriteLineAsync(Vsix.Name + " " + DateTime.Now.ToString() + " - " + request.Url.ExpandVariables() + Environment.NewLine);
 
                     await VS.StatusBar.ShowMessageAsync($"Sending request to {request.Url.ExpandVariables()}...");
                     await VS.StatusBar.StartAnimationAsync(StatusAnimation.Sync);

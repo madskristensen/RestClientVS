@@ -27,8 +27,6 @@ namespace RestClientVS
     {
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            // Create text view host: ITextEditorFactoryService
-
             RegisterEditorFactory(new RestLanguage(this));
 
             await this.RegisterCommandsAsync();

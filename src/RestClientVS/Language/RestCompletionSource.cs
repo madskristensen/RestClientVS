@@ -22,8 +22,7 @@ namespace RestClientVS.Completion
     [Name(RestLanguage.LanguageName)]
     internal class RestCompletionSourceProvider : IAsyncCompletionSourceProvider
     {
-        [Import]
-        private readonly ITextStructureNavigatorSelectorService _structureNavigator = default;
+        [Import] internal ITextStructureNavigatorSelectorService _structureNavigator = null;
 
         public IAsyncCompletionSource GetOrCreate(ITextView textView) =>
             textView.Properties.GetOrCreateSingletonProperty(() => new RestCompletionSource(_structureNavigator));

@@ -11,8 +11,7 @@ namespace RestClientVS
 {
     public abstract class BraceCompletionBase : IBraceCompletionContextProvider
     {
-        [Import]
-        private readonly IClassifierAggregatorService _classifierService = default;
+        [Import] internal IClassifierAggregatorService _classifierService = null;
 
         public bool TryCreateContext(ITextView textView, SnapshotPoint openingPoint, char openingBrace, char closingBrace, out IBraceCompletionContext context)
         {

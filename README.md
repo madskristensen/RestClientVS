@@ -1,4 +1,4 @@
-# Rest Client for Visual Studio
+﻿# Rest Client for Visual Studio
 
 [![Build status](https://ci.appveyor.com/api/projects/status/p149td5c23fap553?svg=true)](https://ci.appveyor.com/project/madskristensen/restclientvs)
 
@@ -42,7 +42,9 @@ This is what it looks like in the Blue Theme.
 
 ![Document](art/document.png)
 
-Notice the *Send Request* text buttons showing up after each URL. Clicking those will fire off the request and display the raw response in the Output Widow.
+Notice the green play buttons showing up after each URL. Clicking those will fire off the request and display the raw response in the Output Widow.
+
+![Output](art/output.png)
 
 Peek at the value of the variables by moving the mouse over any line containing a variable reference.
 

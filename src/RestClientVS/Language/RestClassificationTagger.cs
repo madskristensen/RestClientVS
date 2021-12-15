@@ -16,8 +16,7 @@ namespace RestClientVS.Classify
     [Name(RestLanguage.LanguageName)]
     internal class RestClassificationTaggerProvider : ITaggerProvider
     {
-        [Import]
-        private readonly IClassificationTypeRegistryService _classificationRegistry = default;
+        [Import] internal IClassificationTypeRegistryService _classificationRegistry = null;
 
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag =>
             buffer.Properties.GetOrCreateSingletonProperty(() => new RestClassificationTagger(buffer, _classificationRegistry)) as ITagger<T>;
@@ -57,7 +56,7 @@ namespace RestClientVS.Classify
             {
                 foreach (ParseItem item in _document.Tokens.Where(t => t.Start < span.End && t.End > span.Start))
                 {
-                    if (_map.ContainsKey(item.Type))
+                    if (_map.ContainsKey(item.Type) && item.End <= span.Snapshot.Length)
                     {
                         var itemSpan = new SnapshotSpan(span.Snapshot, item.Start, item.Length);
                         var itemTag = new ClassificationTag(_map[item.Type]);
