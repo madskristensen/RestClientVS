@@ -14,13 +14,12 @@ namespace RestClient
             _ = ParseAsync();
         }
 
-        public List<Token> Tokens { get; private set; } = new List<Token>();
+        public List<ParseItem> Tokens { get; private set; } = new List<ParseItem>();
 
-        public List<Token> Hierarchy { get; private set; } = new List<Token>();
+        public Dictionary<string, string>? VariablesExpanded => _variables;
 
-        public Dictionary<string, string>? Variables => _variables;
-
-        public IEnumerable<Request> Requests => Hierarchy.OfType<Request>();
+        public List<Request> Requests { get; private set; } = new();
+        public List<Variable> Variables { get; private set; } = new();
 
         public void UpdateLines(string[] lines)
         {
@@ -35,12 +34,9 @@ namespace RestClient
 
         private void ExpandVariables()
         {
-            IEnumerable<Variable>? variables = Tokens.OfType<Variable>();
-
             Dictionary<string, string> expandedVars = new();
 
-            // Start by expanding all variable definitions
-            foreach (Variable variable in variables)
+            foreach (Variable variable in Variables)
             {
                 var value = variable.Value!.Text;
 
@@ -49,45 +45,22 @@ namespace RestClient
                     value = value.Replace("{{" + key + "}}", expandedVars[key].Trim());
                 }
 
-                expandedVars[variable.Name!.Text] = value;
+                expandedVars[variable.Name!.Text.Substring(1)] = value;
             }
 
             _variables = expandedVars;
         }
 
-        public Token? GetTokenFromPosition(int position)
+        public ParseItem? GetTokenFromPosition(int position)
         {
-            Token token = Tokens.LastOrDefault(t => t.IntersectsWith(position));
+            ParseItem token = Tokens.LastOrDefault(t => t.Contains(position));
 
-            if (token is Url url && url.Uri!.IntersectsWith(position))
-            {
-                return GetVariableFromPosition(url.Uri, position);
-            }
-
-            if (token is Header header)
-            {
-                if (header.Name!.IntersectsWith(position))
-                {
-                    return GetVariableFromPosition(header.Name, position);
-                }
-
-                if (header.Value!.IntersectsWith(position))
-                {
-                    return GetVariableFromPosition(header.Value, position);
-                }
-            }
-
-            if (token is BodyToken body)
-            {
-                return GetVariableFromPosition(body, position);
-            }
-
-            return token;
+            return GetVariableFromPosition(token, position);
         }
 
-        private Token? GetVariableFromPosition(Token token, int position)
+        private ParseItem? GetVariableFromPosition(ParseItem token, int position)
         {
-            return token.References.FirstOrDefault(v => v.IntersectsWith(position));
+            return token.References.FirstOrDefault(v => v.Value != null && v.Value.Contains(position))?.Value;
         }
     }
 }

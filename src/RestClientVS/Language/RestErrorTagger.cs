@@ -40,13 +40,13 @@ namespace MarkdownEditor.Outlining
 
             SnapshotSpan span = spans[0];
             ITextSnapshot snapshot = _buffer.CurrentSnapshot;
-            IEnumerable<Token> tokens = _document.Tokens.Where(t => t.Start <= span.Start && t.End >= span.End).ToArray();
+            IEnumerable<ParseItem> tokens = _document.Tokens.Where(t => t.Start <= span.Start && t.End >= span.End).ToArray();
 
             foreach (RestClient.Reference reference in tokens.SelectMany(t => t.References))
             {
-                if (!reference.IsValid)
+                if (!reference.Value.IsValid)
                 {
-                    var tooltip = string.Join(Environment.NewLine, reference.Errors);
+                    var tooltip = string.Join(Environment.NewLine, reference.Value.Errors);
 
                     var simpleSpan = new Span(reference.Value.Start, reference.Value.Length);
                     var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);

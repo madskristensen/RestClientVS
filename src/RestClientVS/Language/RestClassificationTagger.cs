@@ -25,28 +25,25 @@ namespace RestClientVS.Classify
 
     internal class RestClassificationTagger : ITagger<IClassificationTag>
     {
-        private static IClassificationType _varAt, _varName, _varValue, _method, _url, _headerName, _operator, _headerValue, _comment, _body, _refCurly, _refValue;
         private readonly RestDocument _document;
+        private static Dictionary<ItemType, IClassificationType> _map;
 
         internal RestClassificationTagger(ITextBuffer buffer, IClassificationTypeRegistryService registry)
         {
             _document = RestDocument.FromTextbuffer(buffer);
 
-            if (_varAt == null)
-            {
-                _varAt = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
-                _varName = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
-                _varValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
-                _method = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupNode);
-                _url = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
-                _headerName = registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
-                _headerValue = registry.GetClassificationType(PredefinedClassificationTypeNames.Literal);
-                _operator = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
-                _comment = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
-                _body = registry.GetClassificationType(PredefinedClassificationTypeNames.Text);
-                _refCurly = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
-                _refValue = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupAttribute);
-            }
+            _map ??= new Dictionary<ItemType, IClassificationType> {
+                { ItemType.VariableName, registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition) },
+                { ItemType.VariableValue, registry.GetClassificationType(PredefinedClassificationTypeNames.Text) },
+                { ItemType.Method, registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupNode)},
+                { ItemType.Url, registry.GetClassificationType(PredefinedClassificationTypeNames.Text)},
+                { ItemType.HeaderName,  registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier)},
+                { ItemType.HeaderValue, registry.GetClassificationType(PredefinedClassificationTypeNames.Literal)},
+                { ItemType.Comment, registry.GetClassificationType(PredefinedClassificationTypeNames.Comment)},
+                { ItemType.Body,  registry.GetClassificationType(PredefinedClassificationTypeNames.Text)},
+                { ItemType.ReferenceBraces, registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition)},
+                { ItemType.ReferenceName, registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupAttribute)},
+            };
         }
 
         public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
@@ -58,75 +55,30 @@ namespace RestClientVS.Classify
 
             foreach (SnapshotSpan span in spans)
             {
-                foreach (Token token in _document.Tokens.Where(t => t.Start < span.End && t.End > span.Start))
+                foreach (ParseItem item in _document.Tokens.Where(t => t.Start < span.End && t.End > span.Start))
                 {
-                    Dictionary<Span, IClassificationType> all = GetClassificationTypes(token);
-
-                    foreach (Span range in all.Keys)
+                    if (_map.ContainsKey(item.Type))
                     {
-                        if (range.End <= span.Snapshot.Length)
+                        var itemSpan = new SnapshotSpan(span.Snapshot, item.Start, item.Length);
+                        var itemTag = new ClassificationTag(_map[item.Type]);
+                        yield return new TagSpan<IClassificationTag>(itemSpan, itemTag);
+
+                        foreach (RestClient.Reference variable in item.References)
                         {
-                            var snapspan = new SnapshotSpan(span.Snapshot, range);
-                            var ct = new ClassificationTag(all[range]);
-                            yield return new TagSpan<IClassificationTag>(snapspan, ct);
+                            var openSpan = new SnapshotSpan(span.Snapshot, variable.Open.Start, variable.Open.Length);
+                            var openTag = new ClassificationTag(_map[variable.Open.Type]);
+                            yield return new TagSpan<IClassificationTag>(openSpan, openTag);
+
+                            var valueSpan = new SnapshotSpan(span.Snapshot, variable.Value.Start, variable.Value.Length);
+                            var valueTag = new ClassificationTag(_map[variable.Value.Type]);
+                            yield return new TagSpan<IClassificationTag>(valueSpan, valueTag);
+
+                            var closeSpan = new SnapshotSpan(span.Snapshot, variable.Close.Start, variable.Close.Length);
+                            var closeTag = new ClassificationTag(_map[variable.Close.Type]);
+                            yield return new TagSpan<IClassificationTag>(closeSpan, closeTag);
                         }
                     }
                 }
-            }
-        }
-
-        private Dictionary<Span, IClassificationType> GetClassificationTypes(Token token)
-        {
-            var spans = new Dictionary<Span, IClassificationType>();
-
-            if (token is Variable variable)
-            {
-                AddSpans(spans, variable.At, _varAt);
-                AddSpans(spans, variable.Name, _varName);
-                AddSpans(spans, variable.Value, _varValue);
-                AddSpans(spans, variable.Operator, _operator);
-            }
-            else if (token is Comment comment)
-            {
-                AddSpans(spans, comment, _comment);
-            }
-            else if (token is RestClient.Url url)
-            {
-                if (url.Method != null)
-                {
-                    AddSpans(spans, url.Method, _method);
-                }
-
-                AddSpans(spans, url.Uri, _url);
-            }
-            else if (token is Header header)
-            {
-                AddSpans(spans, header.Name, _headerName);
-                AddSpans(spans, header.Operator, _operator);
-                AddSpans(spans, header.Value, _headerValue);
-            }
-            else if (token is Comment ct)
-            {
-                AddSpans(spans, ct, _comment);
-            }
-            else if (token is BodyToken body)
-            {
-                AddSpans(spans, body, _body);
-            }
-
-            return spans;
-        }
-
-        private void AddSpans(Dictionary<Span, IClassificationType> spans, Token token, IClassificationType type)
-        {
-            Span tokenSpan = token.ToSimpleSpan();
-            spans.Add(tokenSpan, type);
-
-            foreach (RestClient.Reference variable in token.References)
-            {
-                spans.Add(variable.Open.ToSimpleSpan(), _refCurly);
-                spans.Add(variable.Value.ToSimpleSpan(), _refValue);
-                spans.Add(variable.Close.ToSimpleSpan(), _refCurly);
             }
         }
 

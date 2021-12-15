@@ -10,7 +10,7 @@ namespace RestClientTest
     public class HttpTest
     {
         [Theory]
-        [InlineData("https://bing.com")]
+        [InlineData("delete https://bing.com")]
         [InlineData("POST https://bing.com")]
         [InlineData("PUT https://api.github.com/users/madskristensen")]
         [InlineData("get https://api.github.com/users/madskristensen")]

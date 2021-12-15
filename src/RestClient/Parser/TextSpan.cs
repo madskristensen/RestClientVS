@@ -1,8 +1,8 @@
-﻿namespace RestClient
-{
-    public class TextSpan : Token
-    {
-        public TextSpan(int start, string text, Document document) : base(start, text, document)
-        { }
-    }
-}
+﻿//namespace RestClient
+//{
+//    public class ParseItem : ParseItem
+//    {
+//        public ParseItem(int start, string text, Document document) : base(start, text, document)
+//        { }
+//    }
+//}

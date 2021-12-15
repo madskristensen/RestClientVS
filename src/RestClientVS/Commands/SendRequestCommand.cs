@@ -21,11 +21,11 @@ namespace RestClientVS
             {
                 var position = docView.TextView.Caret.Position.BufferPosition.Position;
                 Document doc = RestDocument.FromTextbuffer(docView.TextBuffer);
-                Request request = doc.Requests.FirstOrDefault(r => r.IntersectsWith(position));
+                Request request = doc.Requests.FirstOrDefault(r => r.Contains(position));
 
                 if (request != null)
                 {
-                    _lastRequest = request.Text;
+                    _lastRequest = request.ToString();
                     _source?.Cancel();
                     _source = new CancellationTokenSource();
 
@@ -40,13 +40,13 @@ namespace RestClientVS
                     await _pane.ClearAsync();
                     await _pane.WriteLineAsync(DateTime.Now.ToString() + " - " + request.Url.ExpandVariables() + Environment.NewLine);
 
-                    await VS.StatusBar.ShowMessageAsync($"Sending request to {request.Url.Uri.ExpandVariables()}...");
+                    await VS.StatusBar.ShowMessageAsync($"Sending request to {request.Url.ExpandVariables()}...");
                     await VS.StatusBar.StartAnimationAsync(StatusAnimation.Sync);
 
                     General options = await General.GetLiveInstanceAsync();
                     RequestResult result = await RequestSender.SendAsync(request, TimeSpan.FromSeconds(options.Timeout), _source.Token);
 
-                    if (!string.IsNullOrEmpty(_lastRequest) && result.RequestToken.Text != _lastRequest)
+                    if (!string.IsNullOrEmpty(_lastRequest) && result.RequestToken.ToString() != _lastRequest)
                     {
                         // Prohibits multiple requests from writing at the same time.
                         return;

@@ -2,15 +2,18 @@
 
 namespace RestClient
 {
-    public abstract class Token
+    public class ParseItem
     {
-        public Token(int start, string text, Document document)
+        public ParseItem(int start, string text, Document document, ItemType type)
         {
             Start = start;
             Text = text;
             TextExcludingLineBreaks = text.TrimEnd();
             Document = document;
+            Type = type;
         }
+
+        public ItemType Type { get; }
 
         public int Start { get; }
 
@@ -31,12 +34,12 @@ namespace RestClient
 
         public bool IsValid => Errors.Count == 0;
 
-        public virtual bool IntersectsWith(int position)
+        public virtual bool Contains(int position)
         {
             return Start <= position && End >= position;
         }
 
-        public Token? Previous
+        public ParseItem? Previous
         {
             get
             {
@@ -45,20 +48,33 @@ namespace RestClient
             }
         }
 
+        public ParseItem? Next
+        {
+            get
+            {
+                var index = Document.Tokens.IndexOf(this);
+                return index < Document.Tokens.Count ? Document.Tokens[index + 1] : null;
+            }
+        }
+
         public string ExpandVariables()
         {
-            // Then replace the references with the expanded values
             var clean = Text;
 
-            if (Document.Variables != null)
+            if (Document.VariablesExpanded != null)
             {
-                foreach (var key in Document.Variables.Keys)
+                foreach (var key in Document.VariablesExpanded.Keys)
                 {
-                    clean = clean.Replace("{{" + key + "}}", Document.Variables[key].Trim());
+                    clean = clean.Replace("{{" + key + "}}", Document.VariablesExpanded[key].Trim());
                 }
             }
 
             return clean.Trim();
+        }
+
+        public override string ToString()
+        {
+            return Type + " " + Text;
         }
     }
 }

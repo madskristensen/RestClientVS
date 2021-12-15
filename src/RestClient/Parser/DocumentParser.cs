@@ -18,15 +18,15 @@ namespace RestClient
             {
                 var start = 0;
 
-                List<Token> tokens = new();
+                List<ParseItem> tokens = new();
 
                 foreach (var line in _lines)
                 {
-                    Token? current = TokenizeLine(start, line, tokens);
+                    IEnumerable<ParseItem>? current = TokenizeLine(start, line, tokens);
 
                     if (current != null)
                     {
-                        tokens.Add(current);
+                        tokens.AddRange(current);
                     }
 
                     start += line.Length;
@@ -43,72 +43,73 @@ namespace RestClient
             });
         }
 
-        private Token? TokenizeLine(int start, string line, List<Token> tokens)
+        private IEnumerable<ParseItem> TokenizeLine(int start, string line, List<ParseItem> tokens)
         {
             var trimmedLine = line.Trim();
+            List<ParseItem> items = new();
 
             // Comment
             if (trimmedLine.StartsWith(Constants.CommentChar.ToString()))
             {
-                return new Comment(start, line, this);
+                items.Add(new ParseItem(start, line, this, ItemType.Comment));
             }
             // Variable declaration
             else if (trimmedLine.StartsWith("@"))
             {
-                return ParseVariable(start, line);
+                items.AddRange(ParseVariable(start, line));
             }
             // Request body
             else if (IsBodyToken(line, tokens))
             {
-                var token = new BodyToken(start, line, this);
+                var token = new ParseItem(start, line, this, ItemType.Body);
                 AddVariableReferences(token);
-                return token;
+                items.Add(token);
             }
             // Empty line
             else if (string.IsNullOrWhiteSpace(line))
             {
-                return new EmptyLine(start, line, this);
+                items.Add(new ParseItem(start, line, this, ItemType.EmptyLine));
             }
             // Request url
             else if (trimmedLine.Contains("://"))
             {
-                return ParseUrlToken(start, line);
+                items.AddRange(ParseUrlToken(start, line));
             }
             // Header
             else if (trimmedLine.Contains(":") && tokens.Any())
             {
-                Token? last = tokens.Last();
-                if (last is Header || last is Url || last is Comment)
+                ParseItem? last = tokens.Last();
+                if (last?.Type == ItemType.HeaderValue || last?.Type == ItemType.Url || last?.Type == ItemType.Comment)
                 {
-                    return ParseRequestHeaders(start, line);
+                    items.AddRange(ParseRequestHeaders(start, line));
                 }
             }
 
-            return null;
+            return items;
         }
 
-        private bool IsBodyToken(string line, List<Token> tokens)
+        private bool IsBodyToken(string line, List<ParseItem> tokens)
         {
-            Token? last = tokens.LastOrDefault();
+            ParseItem? last = tokens.LastOrDefault();
 
             if (last != null && string.IsNullOrWhiteSpace(last.Text) && string.IsNullOrWhiteSpace(line))
             {
                 return false;
             }
 
-            if (last is BodyToken)
+            if (last?.Type == ItemType.Body)
             {
                 return true;
             }
 
-            if (last is not EmptyLine)
+            if (last?.Type != ItemType.EmptyLine)
             {
                 return false;
             }
 
-            Token? parent = tokens.ElementAt(Math.Max(0, tokens.Count - 2));
+            ParseItem? parent = tokens.ElementAtOrDefault(Math.Max(0, tokens.Count - 2));
 
-            if (parent is Header || parent is Url || (parent is Comment comment && !comment.IsSeparator))
+            if (parent?.Type == ItemType.HeaderValue || parent?.Type == ItemType.Url || (parent?.Type == ItemType.Comment && parent?.TextExcludingLineBreaks != "###"))
             {
                 return true;
             }
@@ -116,9 +117,9 @@ namespace RestClient
             return false;
         }
 
-        private Token? ParseUrlToken(int start, string line)
+        private IEnumerable<ParseItem> ParseUrlToken(int start, string line)
         {
-            var regex = new Regex(@"^((?<method>get|post|put|delete|patch|head|options|connect|trace)?\s*)(?<url>.+://.+)", RegexOptions.IgnoreCase);
+            var regex = new Regex(@"^((?<method>get|post|put|delete|patch|head|options|connect|trace)\s*)(?<url>.+://.+)", RegexOptions.IgnoreCase);
             Match match = regex.Match(line);
 
             if (match.Success)
@@ -126,23 +127,18 @@ namespace RestClient
                 Group? methodGroup = match.Groups["method"];
                 Group? urlGroup = match.Groups["url"];
 
-                var urlToken = new Url(start, line, this)
-                {
-                    Method = new TextSpan(start + methodGroup.Index, methodGroup.Value, this),
-                    Uri = new TextSpan(start + urlGroup.Index, urlGroup.Value, this),
-                };
+                var method = new ParseItem(start + methodGroup.Index, methodGroup.Value, this, ItemType.Method);
+                var url = new ParseItem(start + urlGroup.Index, urlGroup.Value, this, ItemType.Url);
 
-                AddVariableReferences(urlToken);
-                AddVariableReferences(urlToken.Method);
-                AddVariableReferences(urlToken.Uri);
+                AddVariableReferences(method);
+                AddVariableReferences(url);
 
-                return urlToken;
+                yield return method;
+                yield return url;
             }
-
-            return null;
         }
 
-        private Token? ParseRequestHeaders(int start, string line)
+        private IEnumerable<ParseItem> ParseRequestHeaders(int start, string line)
         {
             var regex = new Regex(@"^(?<name>[^\s]+)?([\s]+)?(?<operator>:)(?<value>.+)");
             Match match = regex.Match(line);
@@ -151,55 +147,39 @@ namespace RestClient
             {
                 Group? nameGroup = match.Groups["name"];
                 Group? valueGroup = match.Groups["value"];
-                Group? operatorGroup = match.Groups["operator"];
 
-                var header = new Header(start, line, this)
-                {
-                    Name = new TextSpan(start + nameGroup.Index, nameGroup.Value, this),
-                    Value = new TextSpan(start + valueGroup.Index, valueGroup.Value, this),
-                    Operator = new TextSpan(start + operatorGroup.Index, operatorGroup.Value, this),
-                };
+                var name = new ParseItem(start + nameGroup.Index, nameGroup.Value, this, ItemType.HeaderName);
+                var value = new ParseItem(start + valueGroup.Index, valueGroup.Value, this, ItemType.HeaderValue);
 
-                AddVariableReferences(header);
-                AddVariableReferences(header.Name);
-                AddVariableReferences(header.Value);
+                AddVariableReferences(name);
+                AddVariableReferences(value);
 
-                return header;
+                yield return name;
+                yield return value;
             }
-
-            return null;
         }
 
-        private Token? ParseVariable(int start, string line)
+        private IEnumerable<ParseItem> ParseVariable(int start, string line)
         {
-            var regex = new Regex(@"^(?<at>@)(?<name>[^\s]+)\s*(?<equals>=)\s*(?<value>.+)");
+            var regex = new Regex(@"^(?<name>@[^\s]+)\s*(?<equals>=)\s*(?<value>.+)");
             Match match = regex.Match(line);
 
             if (match.Success)
             {
-                Group? atGroup = match.Groups["at"];
                 Group? nameGroup = match.Groups["name"];
                 Group? valueGroup = match.Groups["value"];
-                Group? equalsGroup = match.Groups["equals"];
 
-                var variable = new Variable(start, line, this)
-                {
-                    At = new TextSpan(start + atGroup.Index, atGroup.Value, this),
-                    Name = new TextSpan(start + nameGroup.Index, nameGroup.Value, this),
-                    Value = new TextSpan(start + valueGroup.Index, valueGroup.Value, this),
-                    Operator = new TextSpan(start + equalsGroup.Index, equalsGroup.Value, this),
-                };
+                var name = new ParseItem(start + nameGroup.Index, nameGroup.Value, this, ItemType.VariableName);
+                var value = new ParseItem(start + valueGroup.Index, valueGroup.Value, this, ItemType.VariableValue);
 
-                AddVariableReferences(variable.Value);
-                AddVariableReferences(variable);
+                AddVariableReferences(value);
 
-                return variable;
+                yield return name;
+                yield return value;
             }
-
-            return null;
         }
 
-        private void AddVariableReferences(Token token)
+        private void AddVariableReferences(ParseItem token)
         {
             var regex = new Regex(@"(?<open>{{)(?<value>\$?[\w]+( [\w]+)?)?(?<close>}})");
             var start = token.Start;
@@ -210,36 +190,35 @@ namespace RestClient
                 Group? valueGroup = match.Groups["value"];
                 Group? closeGroup = match.Groups["close"];
 
-                var reference = new Reference(start + match.Index, match.Value, this)
+                var reference = new Reference
                 {
-                    Open = new TextSpan(start + openGroup.Index, openGroup.Value, this),
-                    Value = new TextSpan(start + valueGroup.Index, valueGroup.Value, this),
-                    Close = new TextSpan(start + closeGroup.Index, closeGroup.Value, this),
+                    Open = new ParseItem(start + openGroup.Index, openGroup.Value, this, ItemType.ReferenceBraces),
+                    Value = new ParseItem(start + valueGroup.Index, valueGroup.Value, this, ItemType.ReferenceName),
+                    Close = new ParseItem(start + closeGroup.Index, closeGroup.Value, this, ItemType.ReferenceBraces),
                 };
 
                 token.References.Add(reference);
-                //_document.Tokens.Add(reference);
             }
         }
 
         private void ValidateDocument()
         {
             // Variable references
-            foreach (Token? token in Tokens)
+            foreach (ParseItem? token in Tokens)
             {
                 foreach (Reference reference in token.References)
                 {
-                    if (Variables != null && reference.Value != null && !Variables.ContainsKey(reference.Value.Text))
+                    if (VariablesExpanded != null && reference.Value != null && !VariablesExpanded.ContainsKey(reference.Value.Text))
                     {
-                        reference.Errors.Add($"The variable \"{reference.Value.Text}\" is not defined.");
+                        reference.Value.Errors.Add($"The variable \"{reference.Value.Text}\" is not defined.");
                     }
                 }
             }
 
             // URLs
-            foreach (Url? url in Tokens.OfType<Url>())
+            foreach (ParseItem? url in Tokens.Where(t => t.Type == ItemType.Url))
             {
-                var uri = url.Uri?.ExpandVariables();
+                var uri = url.ExpandVariables();
 
                 if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
                 {
@@ -251,75 +230,72 @@ namespace RestClient
         private void CreateHierarchyOfChildren()
         {
             Request? currentRequest = null;
-            List<Token> hierarchy = new();
+            List<Request> requests = new();
+            List<Variable> variables = new();
 
-            foreach (Token? token in Tokens)
+            foreach (ParseItem? token in Tokens)
             {
-                if (token is Variable)
+                if (token.Type == ItemType.VariableName)
                 {
-                    hierarchy.Add(token);
-                }
-
-                else if (token is Url url)
-                {
-                    currentRequest = new Request(token.Start, token.Text, this)
+                    var variable = new Variable
                     {
-                        Url = url
+                        Name = token,
+                        Value = token.Next,
                     };
 
-                    hierarchy.Add(currentRequest);
-                    currentRequest?.Children?.Add(url);
+                    variables.Add(variable);
+                }
+
+                else if (token.Type == ItemType.Method)
+                {
+                    currentRequest = new Request(this)
+                    {
+                        Method = token,
+                        Url = token.Next
+                    };
+
+                    requests.Add(currentRequest);
+                    currentRequest?.Children?.Add(currentRequest.Method);
+                    currentRequest?.Children?.Add(currentRequest.Url);
                 }
 
                 else if (currentRequest != null)
                 {
-                    if (token is Header header)
+                    if (token.Type == ItemType.HeaderName)
                     {
+                        var header = new Header
+                        {
+                            Name = token,
+                            Value = token.Next,
+                        };
+
                         currentRequest?.Headers?.Add(header);
-                        currentRequest?.Children?.Add(header);
+                        currentRequest?.Children?.Add(header.Name);
+                        currentRequest?.Children?.Add(header.Value);
                     }
-                    else if (token is BodyToken body)
+                    else if (token.Type == ItemType.Body)
                     {
-                        if (string.IsNullOrWhiteSpace(body.Text))
+                        if (string.IsNullOrWhiteSpace(token.Text))
                         {
                             continue;
                         }
 
-                        var prevEmptyLine = body.Previous is BodyToken && string.IsNullOrWhiteSpace(body.Previous.Text) ? body.Previous.Text : "";
-
-                        if (currentRequest.Body != null)
-                        {
-                            currentRequest.Body.Increase(prevEmptyLine + body.Text);
-                        }
-                        else
-                        {
-                            currentRequest.Body = body;
-                            currentRequest?.Children?.Add(body);
-                        }
+                        var prevEmptyLine = token.Previous?.Type == ItemType.Body && string.IsNullOrWhiteSpace(token.Previous.Text) ? token.Previous.Text : "";
+                        currentRequest.Body += prevEmptyLine + token.Text;
+                        currentRequest?.Children?.Add(token);
                     }
-                    else if (token is Comment comment)
+                    else if (token?.Type == ItemType.Comment)
                     {
-                        if (comment.IsSeparator)
+                        if (token.Text.StartsWith("###"))
                         {
                             currentRequest = null;
-                            hierarchy.Add(comment);
                         }
-                        else
-                        {
-                            currentRequest?.Children?.Add(comment);
-                        }
-                    }
-                }
-                else
-                {
-                    if (token is Comment)
-                    {
-                        hierarchy.Add(token);
                     }
                 }
             }
 
-            Hierarchy = hierarchy;
+            Variables = variables;
+            Requests = requests;
         }
 
         public event EventHandler? Parsed;

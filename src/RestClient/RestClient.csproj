@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Parser\Body.cs" />
+    <Compile Remove="Parser\Comment.cs" />
+    <Compile Remove="Parser\EmptyLine.cs" />
+    <Compile Remove="Parser\TextSpan.cs" />
+    <Compile Remove="Parser\Url.cs" />
+  </ItemGroup>
+
 </Project>

@@ -5,7 +5,7 @@ namespace RestClientVS
 {
     public static class ExtensionMethods
     {
-        public static Span ToSimpleSpan(this Token token) =>
+        public static Span ToSpan(this ParseItem token) =>
             new(token.Start, token.Length);
     }
 }

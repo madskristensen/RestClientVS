@@ -1,12 +1,8 @@
 ﻿namespace RestClient
 {
-    public class Header : Token
+    public class Header
     {
-        public Header(int start, string text, Document document) : base(start, text, document)
-        { }
-
-        public TextSpan? Name { get; set; }
-        public TextSpan? Value { get; set; }
-        public TextSpan? Operator { get; set; }
+        public ParseItem? Name { get; set; }
+        public ParseItem? Value { get; set; }
     }
 }

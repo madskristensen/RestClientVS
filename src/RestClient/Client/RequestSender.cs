@@ -43,8 +43,8 @@ namespace RestClient.Client
 
         private static HttpRequestMessage BuildRequest(Request request, RequestResult result)
         {
-            var url = request.Url?.Uri?.ExpandVariables().Trim();
-            HttpMethod method = GetMethod(request.Url?.Method?.Text);
+            var url = request.Url?.ExpandVariables().Trim();
+            HttpMethod method = GetMethod(request.Method?.Text);
 
             var message = new HttpRequestMessage(method, url); ;
 
@@ -73,7 +73,7 @@ namespace RestClient.Client
                 throw new HttpRequestException($"A request body is not supported for {message.Method} requests.");
             }
 
-            message.Content = new StringContent(request.Body.ExpandVariables());
+            message.Content = new StringContent(request.ExpandBodyVariables());
         }
 
         private static void AddHeaders(Request request, HttpRequestMessage message)
@@ -87,7 +87,7 @@ namespace RestClient.Client
 
                     if (name!.Equals("content-type", StringComparison.OrdinalIgnoreCase) && request.Body != null)
                     {
-                        message.Content = new StringContent(request.Body.ExpandVariables(), System.Text.Encoding.UTF8, value);
+                        message.Content = new StringContent(request.ExpandBodyVariables(), System.Text.Encoding.UTF8, value);
                     }
                     else
                     {

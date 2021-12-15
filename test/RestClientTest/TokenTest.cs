@@ -12,20 +12,18 @@ namespace RestClientTest
         [Theory]
         [InlineData(@"GET https://example.com")]
         [InlineData(@"post https://example.com?hat&ost")]
-        [InlineData(@"https://example.com")]
-        [InlineData(@"https://example.com?hat&ost")]
+        [InlineData(@"options https://example.com")]
+        [InlineData(@"Trace https://example.com?hat&ost")]
         public async Task OneLiners(string line)
         {
             var doc = Document.FromLines(line);
             await doc.WaitForParsingCompleteAsync();
-            Token first = doc.Tokens?.FirstOrDefault();
+            ParseItem first = doc.Tokens?.FirstOrDefault();
 
             Assert.NotNull(first);
-            Assert.IsType<Url>(first);
+            Assert.Equal(ItemType.Method, first.Type);
             Assert.Equal(0, first.Start);
-            Assert.Equal(line, first.Text);
-            Assert.Equal(line.Length, first.Length);
-            Assert.Equal(line.Length, first.End);
+            Assert.StartsWith(first.Text, line);
         }
 
         [Fact]
@@ -35,36 +33,26 @@ namespace RestClientTest
 
             var doc = Document.FromLines(lines);
             await doc.WaitForParsingCompleteAsync();
-            var start = 0;
 
-            for (var i = 0; i < lines.Length; i++)
-            {
-                var line = lines[i];
-                Token token = doc.Tokens.ElementAt(i);
+            Request request = doc.Requests?.FirstOrDefault();
 
-                Assert.NotNull(token);
-                Assert.Equal(start, token.Start);
-                Assert.Equal(line, token.Text);
-                Assert.Equal(line.Length, token.Length);
-                Assert.Equal(start + line.Length, token.End);
-
-                start += line.Length;
-            }
+            Assert.Equal("GET", request.Method.Text);
+            Assert.Equal(3, request.Method.Start);
         }
 
         [Fact]
         public async Task MultipleRequests()
         {
-            var lines = new[] {@"http://example.com",
-                                "",
-                                "###",
-                                "",
-                                "http://bing.com"};
+            var lines = new[] {@"get http://example.com\r\n",
+                                "\r\n",
+                                "###\r\n",
+                                "\r\n",
+                                "post http://bing.com"};
 
             var doc = Document.FromLines(lines);
             await doc.WaitForParsingCompleteAsync();
 
-            Assert.Equal(2, doc.Requests.Count());
+            Assert.Equal(2, doc.Requests.Count);
         }
 
         [Fact]
@@ -72,7 +60,7 @@ namespace RestClientTest
         {
             var lines = new[]
             {
-                "https://example.com",
+                "GET https://example.com",
                 "User-Agent: ost",
                 "\r\n",
                 "{\"enabled\": true}"
@@ -91,7 +79,7 @@ namespace RestClientTest
         {
             var lines = new[]
             {
-                "https://example.com",
+                "GET https://example.com",
                 "User-Agent: ost",
                 "\r\n",
                 "{\r\n",
@@ -112,7 +100,7 @@ namespace RestClientTest
         {
             var lines = new[]
             {
-          "https://example.com",
+          "DELETE https://example.com",
           "User-Agent: ost",
           "#ost:hat",
           "\r\n",
@@ -126,12 +114,12 @@ namespace RestClientTest
             Request first = doc.Requests.FirstOrDefault();
 
             Assert.NotNull(first);
-            Assert.Single(doc.Hierarchy);
-            Assert.IsType<Comment>(first.Children.ElementAt(2));
-            Assert.IsType<BodyToken>(first.Children.ElementAt(3));
+            Assert.Single(doc.Requests);
+            Assert.Equal(ItemType.HeaderName, first.Children.ElementAt(2).Type);
+            Assert.Equal(ItemType.Body, first.Children.ElementAt(4).Type);
             Assert.Equal(@"{
 \t""enabled"": true
-}", first.Body.Text);
+}", first.Body);
         }
 
         [Theory]
@@ -145,10 +133,10 @@ namespace RestClientTest
         {
             var doc = Document.FromLines(line);
             await doc.WaitForParsingCompleteAsync();
-            Token first = doc.Tokens?.FirstOrDefault();
+            ParseItem first = doc.Tokens?.FirstOrDefault();
 
             Assert.NotNull(first);
-            Assert.IsType<EmptyLine>(first);
+            Assert.Equal(ItemType.EmptyLine, first.Type);
             Assert.Equal(0, first.Start);
             Assert.Equal(line, first.Text);
             Assert.Equal(line.Length, first.Length);
@@ -159,13 +147,13 @@ namespace RestClientTest
 
         public async Task CommentAfterNewLineInRequest()
         {
-            var text = new[] { "http://bing.com\r\n", "\r\n", "###" };
+            var text = new[] { "GET http://bing.com\r\n", "\r\n", "###" };
 
             var doc = Document.FromLines(text);
             await doc.WaitForParsingCompleteAsync();
-            var comment = doc.Tokens.ElementAt(2) as Comment;
+            ParseItem comment = doc.Tokens.ElementAt(3);
 
-            Assert.Equal(19, comment.Start);
+            Assert.Equal(23, comment.Start);
         }
 
         [Fact]
@@ -182,6 +170,7 @@ namespace RestClientTest
                                 "\r\n",
                                 "    \"modified_by\": \"$test$\"\r\n",
                                 "}\r\n",
+                                "\r\n",
                                 "\r\n",};
 
             var doc = Document.FromLines(text);
@@ -189,8 +178,8 @@ namespace RestClientTest
             Request request = doc.Requests.First();
 
             Assert.NotNull(request.Body);
-            Assert.Contains("$test$", request.Body.Text);
-            Assert.EndsWith("}", request.Body.TextExcludingLineBreaks);
+            Assert.Contains("$test$", request.Body);
+            Assert.EndsWith("}", request.Body.Trim());
         }
 
         [Fact]
@@ -200,16 +189,12 @@ namespace RestClientTest
 
             var doc = Document.FromLines(text);
             await doc.WaitForParsingCompleteAsync();
-            var variable = doc.Tokens.FirstOrDefault() as Variable;
+            ParseItem name = doc.Tokens.FirstOrDefault();
 
-            Assert.Equal(0, variable.At.Start);
-            Assert.Equal(1, variable.At.Length);
-            Assert.Equal(1, variable.Name.Start);
-            Assert.Equal(4, variable.Name.Length);
-            Assert.Equal(6, variable.Operator.Start);
-            Assert.Equal(1, variable.Operator.Length);
-            Assert.Equal(8, variable.Value.Start);
-            Assert.Equal(5, variable.Value.Length);
+            Assert.Equal(0, name.Start);
+            Assert.Equal(5, name.Length);
+            Assert.Equal(8, name.Next.Start);
+            Assert.Equal(5, name.Next.Length);
         }
 
         [Fact]
@@ -223,7 +208,7 @@ namespace RestClientTest
             var doc = Document.FromLines(text);
             await doc.WaitForParsingCompleteAsync();
 
-            Assert.Equal(4, doc.Tokens.Count);
+            Assert.Equal(7, doc.Tokens.Count);
         }
     }
 }

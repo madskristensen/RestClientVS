@@ -1,44 +1,75 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace RestClient
 {
-    public class Request : Token
+    public class Request
     {
-        public Request(int start, string text, Document document) : base(start, text, document)
-        { }
+        private readonly Document _document;
 
-        public List<Token>? Children { get; set; } = new List<Token>();
-
-        public Url? Url { get; set; }
-
-        public List<Header>? Headers { get; } = new List<Header>();
-
-        public BodyToken? Body { get; set; }
-
-        public override string Text
+        public Request(Document document)
         {
-            get => string.Concat(Children.Select(c => c.Text));
-            protected set => base.Text = value;
+            _document = document;
         }
 
-        public override string TextExcludingLineBreaks
+        public List<ParseItem>? Children { get; set; } = new List<ParseItem>();
+
+        public ParseItem? Method { get; set; }
+        public ParseItem? Url { get; set; }
+
+        public List<Header>? Headers { get; } = new();
+
+        public string? Body { get; set; }
+
+        public int Start => Method?.Start ?? 0;
+        public int End => Children.LastOrDefault()?.End ?? 0;
+
+        public int Length => End - Start;
+
+        public bool Contains(int position)
         {
-            get => Text.TrimEnd();
-            protected set => base.Text = value;
+            return position >= Start && position <= End;
         }
 
-        public override int End
+        public override string ToString()
         {
-            get
+            StringBuilder sb = new();
+
+            sb.AppendLine($"{Method?.Text} {Url?.ExpandVariables()}");
+
+            foreach (Header header in Headers!)
             {
-                if (Children.Any())
-                {
-                    return Children.Last().End;
-                }
-
-                return base.End;
+                sb.AppendLine($"{header?.Name?.ExpandVariables()}: { header?.Value?.ExpandVariables()}");
             }
+
+            if (!string.IsNullOrEmpty(Body))
+            {
+                sb.AppendLine(ExpandBodyVariables());
+            }
+
+            return sb.ToString().Trim();
+        }
+
+        public string ExpandBodyVariables()
+        {
+            if (Body == null)
+            {
+                return "";
+            }
+
+            // Then replace the references with the expanded values
+            var clean = Body;
+
+            if (_document.VariablesExpanded != null)
+            {
+                foreach (var key in _document.VariablesExpanded.Keys)
+                {
+                    clean = clean.Replace("{{" + key + "}}", _document.VariablesExpanded[key].Trim());
+                }
+            }
+
+            return clean.Trim();
         }
     }
 }

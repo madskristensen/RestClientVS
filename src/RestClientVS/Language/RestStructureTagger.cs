@@ -74,12 +74,12 @@ namespace MarkdownEditor.Outlining
             ITextSnapshot snapshot = _buffer.CurrentSnapshot;
             List<ITagSpan<IStructureTag>> list = new();
 
-            foreach (Request request in _document.Requests.Where(r => r.Children.Count > 1))
+            foreach (Request request in _document.Requests.Where(r => r.Headers.Any() || !string.IsNullOrEmpty(r.Body)))
             {
                 var text = request.Url.Text.Trim();
-                var tooltip = request.Text.Trim();
+                var tooltip = request.ToString();
 
-                var simpleSpan = new Span(request.Start, request.Length - 1);
+                var simpleSpan = new Span(request.Method.Start, request.Length - 1);
                 var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
                 TagSpan<IStructureTag> tag = CreateTag(snapShotSpan, text, tooltip);
                 list.Add(tag);

@@ -1,12 +1,9 @@
 ﻿namespace RestClient
 {
-    public class Reference : Token
+    public class Reference
     {
-        public Reference(int start, string text, Document document) : base(start, text, document)
-        { }
-
-        public TextSpan? Open { get; set; }
-        public TextSpan? Value { get; set; }
-        public TextSpan? Close { get; set; }
+        public ParseItem? Open { get; set; }
+        public ParseItem? Value { get; set; }
+        public ParseItem? Close { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.VisualStudio.Commanding;
 using Microsoft.VisualStudio.Text;
@@ -23,16 +22,15 @@ namespace RestClientVS.Commands
             var position = args.TextView.Caret.Position.BufferPosition.Position;
 
             Document document = RestDocument.FromTextbuffer(args.TextView.TextBuffer);
-            Token token = document.GetTokenFromPosition(position);
-            IEnumerable<Variable> variables = document.Tokens.OfType<Variable>();
+            ParseItem token = document.GetTokenFromPosition(position);
 
-            if (token is RestClient.Reference reference)
+            if (token?.Type == ItemType.ReferenceName)
             {
-                Variable definition = variables.FirstOrDefault(v => v.Name.Text.Equals(reference.Value.Text, StringComparison.OrdinalIgnoreCase));
+                Variable definition = document.Variables.FirstOrDefault(v => v.Name.Text.Substring(1).Equals(token.Text, StringComparison.OrdinalIgnoreCase));
 
                 if (definition != null)
                 {
-                    args.TextView.Caret.MoveTo(new SnapshotPoint(args.TextView.TextBuffer.CurrentSnapshot, definition.Start));
+                    args.TextView.Caret.MoveTo(new SnapshotPoint(args.TextView.TextBuffer.CurrentSnapshot, definition.Name.Start));
                 }
 
                 return true;

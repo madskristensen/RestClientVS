@@ -47,18 +47,18 @@ namespace RestClientVS.Completion
 
             Document document = RestDocument.FromTextbuffer(session.TextView.TextBuffer);
             SnapshotPoint lineStart = line.Start;
-            Token token = GetPreviousToken(document, lineStart, out var hasEmptyLine);
+            ParseItem token = GetPreviousToken(document, lineStart, out var hasEmptyLine);
 
             if (applicableToSpan.Start == lineStart) // only trigger on beginning of line
             {
                 // HTTP Method
-                if (token == null || token is Variable || (token is Comment comment && comment.IsSeparator))
+                if (token == null || token.Type == ItemType.VariableName || (token.Type == ItemType.Comment && token.Text.StartsWith("###")))
                 {
                     return Task.FromResult(ConvertToCompletionItems(RestCompletionCatalog.HttpMethods, _httpMethodIcon));
                 }
 
                 // HTTP Headers
-                if (!hasEmptyLine && (token is Header || token is RestClient.Url))
+                if (!hasEmptyLine && (token.Type == ItemType.HeaderValue || token.Type == ItemType.Url))
                 {
                     var spanBeforeCaret = new SnapshotSpan(lineStart, triggerLocation);
                     var textBeforeCaret = triggerLocation.Snapshot.GetText(spanBeforeCaret);
@@ -73,11 +73,11 @@ namespace RestClientVS.Completion
             }
 
             // Variable references
-            Token currentToken = document.Tokens.LastOrDefault(v => v.IntersectsWith(triggerLocation.Position));
-            RestClient.Reference currentReference = currentToken?.References.FirstOrDefault(v => v.IntersectsWith(triggerLocation.Position));
+            ParseItem currentToken = document.Tokens.LastOrDefault(v => v.Contains(triggerLocation.Position));
+            RestClient.Reference currentReference = currentToken?.References.FirstOrDefault(v => v.Value.Contains(triggerLocation.Position));
             if (currentReference != null)
             {
-                return Task.FromResult(ConvertToCompletionItems(document.Variables, _referenceIcon));
+                return Task.FromResult(ConvertToCompletionItems(document.VariablesExpanded, _referenceIcon));
             }
 
             //// User is likely in the key portion of the pair
@@ -95,24 +95,24 @@ namespace RestClientVS.Completion
             return Task.FromResult<CompletionContext>(null);
         }
 
-        private Token GetPreviousToken(Document document, SnapshotPoint point, out bool hasEmptyLine)
+        private ParseItem GetPreviousToken(Document document, SnapshotPoint point, out bool hasEmptyLine)
         {
-            Token current = null;
+            ParseItem current = null;
             hasEmptyLine = false;
 
-            foreach (Token token in document.Tokens)
+            foreach (ParseItem token in document.Tokens)
             {
                 if (token.End > point.Position)
                 {
                     break;
                 }
 
-                if (token is not EmptyLine)
+                if (token?.Type != ItemType.EmptyLine)
                 {
                     current = token;
                 }
 
-                hasEmptyLine = token is EmptyLine;
+                hasEmptyLine = token?.Type == ItemType.EmptyLine;
             }
 
             return current;
