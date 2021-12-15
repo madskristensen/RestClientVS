@@ -20,38 +20,25 @@ namespace MarkdownEditor.Outlining
             buffer.Properties.GetOrCreateSingletonProperty(() => new RestStructureTagger(buffer)) as ITagger<T>;
     }
 
-    public class RestStructureTagger : ITagger<IStructureTag>, IDisposable
+    public class RestStructureTagger : ITagger<IStructureTag>
     {
-        private Document _doc;
-        private bool _isDisposed;
         private readonly ITextBuffer _buffer;
 
         public RestStructureTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
-            ParseDocumentAsync().FireAndForget();
-
-            if (buffer is ITextBuffer2 buffer2)
-            {
-                buffer2.ChangedOnBackground += BufferChanged;
-            }
-        }
-
-        private void BufferChanged(object sender, TextContentChangedEventArgs e)
-        {
-            ParseDocumentAsync().FireAndForget();
         }
 
         public IEnumerable<ITagSpan<IStructureTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0 || _doc == null)
+            if (spans.Count == 0)
             {
                 yield return null;
             }
 
             ITextSnapshot snapshot = _buffer.CurrentSnapshot;
 
-            foreach (Request request in _doc.Requests.Where(r => r.Children.Count > 1))
+            foreach (Request request in _buffer.GetDocument().Requests.Where(r => r.Children.Count > 1))
             {
                 var text = request.Url.Text.Trim();
                 var tooltip = request.Text.Trim();
@@ -77,28 +64,10 @@ namespace MarkdownEditor.Outlining
             return new TagSpan<IStructureTag>(span, structureTag);
         }
 
-        private Task ParseDocumentAsync()
+        public event EventHandler<SnapshotSpanEventArgs> TagsChanged
         {
-            _doc = _buffer.GetDocument();
-            var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
-            TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(span));
-
-            return Task.CompletedTask;
+            add { }
+            remove { }
         }
-
-        public void Dispose()
-        {
-            if (!_isDisposed)
-            {
-                if (_buffer is ITextBuffer2 buffer2)
-                {
-                    buffer2.ChangedOnBackground += BufferChanged;
-                }
-            }
-
-            _isDisposed = true;
-        }
-
-        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
     }
 }

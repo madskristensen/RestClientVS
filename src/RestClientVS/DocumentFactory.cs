@@ -19,9 +19,15 @@ namespace RestClientVS
                 {
                     IEnumerable<ITextSnapshotLine> lines = key.Lines;
                     var textLines = lines.Select(line => line.GetTextIncludingLineBreak()).ToArray();
-                    return Document.FromLines(textLines);
+                    var doc = Document.FromLines(textLines);
+
+                    DocumentParsed?.Invoke(null, doc);
+
+                    return doc;
                 });
             }
         }
+
+        public static EventHandler<Document> DocumentParsed;
     }
 }

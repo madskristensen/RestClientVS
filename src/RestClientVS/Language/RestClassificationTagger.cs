@@ -23,12 +23,10 @@ namespace RestClientVS.Classify
             buffer.Properties.GetOrCreateSingletonProperty(() => new RestClassificationTagger(buffer, _classificationRegistry)) as ITagger<T>;
     }
 
-    internal class RestClassificationTagger : ITagger<IClassificationTag>, IDisposable
+    internal class RestClassificationTagger : ITagger<IClassificationTag>
     {
         private static IClassificationType _varAt, _varName, _varValue, _method, _url, _headerName, _operator, _headerValue, _comment, _body, _refCurly, _refValue;
         private readonly ITextBuffer _buffer;
-        private Document _doc;
-        private bool _isDisposed;
 
         internal RestClassificationTagger(ITextBuffer buffer, IClassificationTypeRegistryService registry)
         {
@@ -49,18 +47,6 @@ namespace RestClientVS.Classify
                 _refCurly = registry.GetClassificationType(PredefinedClassificationTypeNames.SymbolDefinition);
                 _refValue = registry.GetClassificationType(PredefinedClassificationTypeNames.MarkupAttribute);
             }
-
-            ParseDocumentAsync().FireAndForget();
-
-            if (_buffer is ITextBuffer2 buffer2)
-            {
-                buffer2.ChangedOnBackground += bufferChanged;
-            }
-        }
-
-        private void bufferChanged(object sender, TextContentChangedEventArgs e)
-        {
-            ParseDocumentAsync().FireAndForget();
         }
 
         public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
@@ -69,12 +55,12 @@ namespace RestClientVS.Classify
 
             foreach (SnapshotSpan span in spans)
             {
-                if (_doc == null || span.IsEmpty)
+                if (span.IsEmpty)
                 {
                     return list;
                 }
 
-                Token[] tokens = _doc.Tokens.Where(t => t.Start < span.End && t.End > span.Start).ToArray();
+                Token[] tokens = _buffer.GetDocument().Tokens.Where(t => t.Start < span.End && t.End > span.Start).ToArray();
 
                 foreach (Token token in tokens)
                 {
@@ -150,28 +136,10 @@ namespace RestClientVS.Classify
             }
         }
 
-        private Task ParseDocumentAsync()
+        public event EventHandler<SnapshotSpanEventArgs> TagsChanged
         {
-            _doc = _buffer.GetDocument();
-            var span = new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
-            TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(span));
-
-            return Task.CompletedTask;
+            add { }
+            remove { }
         }
-
-        public void Dispose()
-        {
-            if (!_isDisposed)
-            {
-                if (_buffer is ITextBuffer2 buffer2)
-                {
-                    buffer2.ChangedOnBackground += bufferChanged;
-                }
-            }
-
-            _isDisposed = true;
-        }
-
-        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
     }
 }
