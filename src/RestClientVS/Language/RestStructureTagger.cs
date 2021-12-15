@@ -20,33 +20,72 @@ namespace MarkdownEditor.Outlining
             buffer.Properties.GetOrCreateSingletonProperty(() => new RestStructureTagger(buffer)) as ITagger<T>;
     }
 
-    public class RestStructureTagger : ITagger<IStructureTag>
+    public class RestStructureTagger : ITagger<IStructureTag>, IDisposable
     {
         private readonly ITextBuffer _buffer;
+        private readonly RestDocument _document;
+        private List<ITagSpan<IStructureTag>> _structureTags = new();
+        private bool _isDisposed;
 
         public RestStructureTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
+            _document = RestDocument.FromTextbuffer(buffer);
+            _document.Parsed += DocumentParsed;
+
+            StartParsing();
+        }
+
+        private void DocumentParsed(object sender, EventArgs e)
+        {
+            StartParsing();
         }
 
         public IEnumerable<ITagSpan<IStructureTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0)
+            if (spans.Count == 0 || !_structureTags.Any())
             {
-                yield return null;
+                return null;
             }
 
-            ITextSnapshot snapshot = _buffer.CurrentSnapshot;
+            return _structureTags;
+        }
 
-            foreach (Request request in _buffer.GetDocument().Requests.Where(r => r.Children.Count > 1))
+        private void StartParsing()
+        {
+            ThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
+            {
+                if (TagsChanged == null || _document.IsParsing)
+                {
+                    return Task.CompletedTask;
+                }
+
+                _structureTags.Clear();
+                ReParse();
+                TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length)));
+
+                return Task.CompletedTask;
+            },
+                VsTaskRunContext.UIThreadIdlePriority).FireAndForget();
+        }
+
+        private void ReParse()
+        {
+            ITextSnapshot snapshot = _buffer.CurrentSnapshot;
+            List<ITagSpan<IStructureTag>> list = new();
+
+            foreach (Request request in _document.Requests.Where(r => r.Children.Count > 1))
             {
                 var text = request.Url.Text.Trim();
                 var tooltip = request.Text.Trim();
 
                 var simpleSpan = new Span(request.Start, request.Length - 1);
                 var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
-                yield return CreateTag(snapShotSpan, text, tooltip);
+                TagSpan<IStructureTag> tag = CreateTag(snapShotSpan, text, tooltip);
+                list.Add(tag);
             }
+
+            _structureTags = list;
         }
 
         private static TagSpan<IStructureTag> CreateTag(SnapshotSpan span, string text, string tooltip)
@@ -64,10 +103,16 @@ namespace MarkdownEditor.Outlining
             return new TagSpan<IStructureTag>(span, structureTag);
         }
 
-        public event EventHandler<SnapshotSpanEventArgs> TagsChanged
+        public void Dispose()
         {
-            add { }
-            remove { }
+            if (!_isDisposed)
+            {
+                _document.Parsed -= DocumentParsed;
+            }
+
+            _isDisposed = true;
         }
+
+        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
     }
 }

@@ -45,7 +45,7 @@ namespace RestClientVS.Completion
         {
             ITextSnapshotLine line = triggerLocation.GetContainingLine();
 
-            Document document = session.TextView.TextBuffer.GetDocument();
+            Document document = RestDocument.FromTextbuffer(session.TextView.TextBuffer);
             SnapshotPoint lineStart = line.Start;
             Token token = GetPreviousToken(document, lineStart, out var hasEmptyLine);
 

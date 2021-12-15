@@ -17,6 +17,8 @@ namespace RestClientTest
         public async Task SendAsync(string url)
         {
             var doc = Document.FromLines(url);
+            await doc.WaitForParsingCompleteAsync();
+
             RequestResult client = await RequestSender.SendAsync(doc.Requests.First(), TimeSpan.FromSeconds(10));
             var raw = await client.Response.ToRawStringAsync();
 

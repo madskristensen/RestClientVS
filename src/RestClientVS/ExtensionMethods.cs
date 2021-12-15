@@ -7,8 +7,5 @@ namespace RestClientVS
     {
         public static Span ToSimpleSpan(this Token token) =>
             new(token.Start, token.Length);
-
-        public static Document GetDocument(this ITextBuffer buffer) =>
-            DocumentFactory.GetDocument(buffer);
     }
 }

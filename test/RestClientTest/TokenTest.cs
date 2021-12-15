@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using RestClient;
 using Xunit;
 
 namespace RestClientTest
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public class TokenTest
     {
         [Theory]
@@ -12,9 +14,10 @@ namespace RestClientTest
         [InlineData(@"post https://example.com?hat&ost")]
         [InlineData(@"https://example.com")]
         [InlineData(@"https://example.com?hat&ost")]
-        public void OneLiners(string line)
+        public async Task OneLiners(string line)
         {
             var doc = Document.FromLines(line);
+            await doc.WaitForParsingCompleteAsync();
             Token first = doc.Tokens?.FirstOrDefault();
 
             Assert.NotNull(first);
@@ -26,11 +29,12 @@ namespace RestClientTest
         }
 
         [Fact]
-        public void RequestTextAfterLineBreak()
+        public async Task RequestTextAfterLineBreak()
         {
             var lines = new[] { "\r", Environment.NewLine, @"GET https://example.com" };
 
             var doc = Document.FromLines(lines);
+            await doc.WaitForParsingCompleteAsync();
             var start = 0;
 
             for (var i = 0; i < lines.Length; i++)
@@ -49,7 +53,7 @@ namespace RestClientTest
         }
 
         [Fact]
-        public void MultipleRequests()
+        public async Task MultipleRequests()
         {
             var lines = new[] {@"http://example.com",
                                 "",
@@ -58,12 +62,13 @@ namespace RestClientTest
                                 "http://bing.com"};
 
             var doc = Document.FromLines(lines);
+            await doc.WaitForParsingCompleteAsync();
 
             Assert.Equal(2, doc.Requests.Count());
         }
 
         [Fact]
-        public void RequestWithHeaderAndBody()
+        public async Task RequestWithHeaderAndBody()
         {
             var lines = new[]
             {
@@ -74,6 +79,7 @@ namespace RestClientTest
             };
 
             var doc = Document.FromLines(lines);
+            await doc.WaitForParsingCompleteAsync();
             Request request = doc.Requests?.FirstOrDefault();
 
             Assert.Single(doc.Requests);
@@ -81,7 +87,7 @@ namespace RestClientTest
         }
 
         [Fact]
-        public void RequestWithHeaderAndMultilineBody()
+        public async Task RequestWithHeaderAndMultilineBody()
         {
             var lines = new[]
             {
@@ -94,6 +100,7 @@ namespace RestClientTest
             };
 
             var doc = Document.FromLines(lines);
+            await doc.WaitForParsingCompleteAsync();
             Request request = doc.Requests.First();
 
             Assert.NotNull(request.Body);
@@ -101,7 +108,7 @@ namespace RestClientTest
         }
 
         [Fact]
-        public void RequestWithHeaderAndBodyAndComment()
+        public async Task RequestWithHeaderAndBodyAndComment()
         {
             var lines = new[]
             {
@@ -115,6 +122,7 @@ namespace RestClientTest
       };
 
             var doc = Document.FromLines(lines);
+            await doc.WaitForParsingCompleteAsync();
             Request first = doc.Requests.FirstOrDefault();
 
             Assert.NotNull(first);
@@ -133,9 +141,10 @@ namespace RestClientTest
         [InlineData("\r")]
         [InlineData("\n")]
         [InlineData("\r\n")]
-        public void EmptyLines(string line)
+        public async Task EmptyLines(string line)
         {
             var doc = Document.FromLines(line);
+            await doc.WaitForParsingCompleteAsync();
             Token first = doc.Tokens?.FirstOrDefault();
 
             Assert.NotNull(first);
@@ -147,18 +156,20 @@ namespace RestClientTest
         }
 
         [Fact]
-        public void CommentAfterNewLineInRequest()
+
+        public async Task CommentAfterNewLineInRequest()
         {
             var text = new[] { "http://bing.com\r\n", "\r\n", "###" };
 
             var doc = Document.FromLines(text);
+            await doc.WaitForParsingCompleteAsync();
             var comment = doc.Tokens.ElementAt(2) as Comment;
 
             Assert.Equal(19, comment.Start);
         }
 
         [Fact]
-        public void BodyAfterComment()
+        public async Task BodyAfterComment()
         {
             var text = new[] { @"PATCH https://{{host}}/authors/{{name}}\r\n",
                                 "Content-Type: at{{contentType}}svin\r\n",
@@ -174,6 +185,7 @@ namespace RestClientTest
                                 "\r\n",};
 
             var doc = Document.FromLines(text);
+            await doc.WaitForParsingCompleteAsync();
             Request request = doc.Requests.First();
 
             Assert.NotNull(request.Body);
@@ -182,11 +194,12 @@ namespace RestClientTest
         }
 
         [Fact]
-        public void VariableTokenization()
+        public async Task VariableTokenization()
         {
             var text = $"@name = value";
 
             var doc = Document.FromLines(text);
+            await doc.WaitForParsingCompleteAsync();
             var variable = doc.Tokens.FirstOrDefault() as Variable;
 
             Assert.Equal(0, variable.At.Start);
@@ -200,7 +213,7 @@ namespace RestClientTest
         }
 
         [Fact]
-        public void CommentInBetweenHeaders()
+        public async Task CommentInBetweenHeaders()
         {
             var text = new[] { @"POST https://example.com",
                                 "Content-Type:application/json",
@@ -208,6 +221,7 @@ namespace RestClientTest
                                 "Accept: gzip" };
 
             var doc = Document.FromLines(text);
+            await doc.WaitForParsingCompleteAsync();
 
             Assert.Equal(4, doc.Tokens.Count);
         }

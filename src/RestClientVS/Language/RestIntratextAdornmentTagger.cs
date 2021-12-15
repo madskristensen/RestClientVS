@@ -25,20 +25,22 @@ namespace RestClientVS.Language
     internal class RestIntratextAdornmentTagger : ITagger<IntraTextAdornmentTag>
     {
         private readonly ITextBuffer _buffer;
+        private readonly RestDocument _document;
 
         public RestIntratextAdornmentTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
+            _document = RestDocument.FromTextbuffer(buffer);
         }
 
         public IEnumerable<ITagSpan<IntraTextAdornmentTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0)
+            if (spans.Count == 0 || _document.IsParsing)
             {
                 yield return null;
             }
 
-            foreach (Request request in _buffer.GetDocument().Requests.Where(r => r.Url.IsValid))
+            foreach (Request request in _document.Requests.Where(r => r.Url.IsValid))
             {
                 if (_buffer.CurrentSnapshot.Length >= request.Start)
                 {
@@ -59,6 +61,8 @@ namespace RestClientVS.Language
                 FontWeight = FontWeights.SemiBold,
                 Foreground = Brushes.Green,
                 Cursor = Cursors.Hand,
+                Padding = new Thickness(0),
+                Margin = new Thickness(4, -2, 0, 0),
             };
 
             element.MouseLeftButtonUp += Element_MouseLeftButtonUp;

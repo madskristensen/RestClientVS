@@ -23,22 +23,24 @@ namespace MarkdownEditor.Outlining
     public class RestErrorTagger : ITagger<IErrorTag>
     {
         private readonly ITextBuffer _buffer;
+        private readonly RestDocument _document;
 
         public RestErrorTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
+            _document = RestDocument.FromTextbuffer(buffer);
         }
 
         public IEnumerable<ITagSpan<IErrorTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0)
+            if (spans.Count == 0 || _document.IsParsing)
             {
                 yield return null;
             }
 
             SnapshotSpan span = spans[0];
             ITextSnapshot snapshot = _buffer.CurrentSnapshot;
-            IEnumerable<Token> tokens = _buffer.GetDocument().Tokens.Where(t => t.Start <= span.Start && t.End >= span.End).ToArray();
+            IEnumerable<Token> tokens = _document.Tokens.Where(t => t.Start <= span.Start && t.End >= span.End).ToArray();
 
             foreach (RestClient.Reference reference in tokens.SelectMany(t => t.References))
             {

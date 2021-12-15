@@ -26,11 +26,11 @@ namespace RestClientVS.Classify
     internal class RestClassificationTagger : ITagger<IClassificationTag>
     {
         private static IClassificationType _varAt, _varName, _varValue, _method, _url, _headerName, _operator, _headerValue, _comment, _body, _refCurly, _refValue;
-        private readonly ITextBuffer _buffer;
+        private readonly RestDocument _document;
 
         internal RestClassificationTagger(ITextBuffer buffer, IClassificationTypeRegistryService registry)
         {
-            _buffer = buffer;
+            _document = RestDocument.FromTextbuffer(buffer);
 
             if (_varAt == null)
             {
@@ -51,18 +51,14 @@ namespace RestClientVS.Classify
 
         public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            var list = new List<ITagSpan<IClassificationTag>>();
+            if (spans.Count == 0)
+            {
+                yield return null;
+            }
 
             foreach (SnapshotSpan span in spans)
             {
-                if (span.IsEmpty)
-                {
-                    return list;
-                }
-
-                Token[] tokens = _buffer.GetDocument().Tokens.Where(t => t.Start < span.End && t.End > span.Start).ToArray();
-
-                foreach (Token token in tokens)
+                foreach (Token token in _document.Tokens.Where(t => t.Start < span.End && t.End > span.Start))
                 {
                     Dictionary<Span, IClassificationType> all = GetClassificationTypes(token);
 
@@ -72,13 +68,11 @@ namespace RestClientVS.Classify
                         {
                             var snapspan = new SnapshotSpan(span.Snapshot, range);
                             var ct = new ClassificationTag(all[range]);
-                            list.Add(new TagSpan<IClassificationTag>(snapspan, ct));
+                            yield return new TagSpan<IClassificationTag>(snapspan, ct);
                         }
                     }
                 }
             }
-
-            return list;
         }
 
         private Dictionary<Span, IClassificationType> GetClassificationTypes(Token token)

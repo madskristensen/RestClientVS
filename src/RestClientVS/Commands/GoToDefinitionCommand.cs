@@ -22,7 +22,7 @@ namespace RestClientVS.Commands
         {
             var position = args.TextView.Caret.Position.BufferPosition.Position;
 
-            Document document = args.TextView.TextBuffer.GetDocument();
+            Document document = RestDocument.FromTextbuffer(args.TextView.TextBuffer);
             Token token = document.GetTokenFromPosition(position);
             IEnumerable<Variable> variables = document.Tokens.OfType<Variable>();
 

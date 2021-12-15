@@ -33,7 +33,7 @@ namespace RestClientVS.QuickInfo
 
             if (triggerPoint.HasValue)
             {
-                Document doc = _buffer.GetDocument();
+                Document doc = RestDocument.FromTextbuffer(_buffer);
                 var position = triggerPoint.Value.Position;
 
                 Token token = doc.Tokens.LastOrDefault(t => t.IntersectsWith(position));
