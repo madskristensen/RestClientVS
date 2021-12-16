@@ -44,6 +44,7 @@ jobs:
       uses: NuGet/setup-nuget@v1.0.5
 
       # TODO: Increment version and set in VSIX/nuspec/etc
+      # github.run_number
 
     - name: Restore
       run: nuget restore -Verbosity quiet
@@ -55,7 +56,7 @@ jobs:
       run: dotnet test test/RestClientTest/RestClientTest.csproj
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
+      uses: actions/upload-artifact@v2
       with:
         name: RestClientVS.vsix
-        path: built/*.vsix
+        path: built/**/*.vsix
