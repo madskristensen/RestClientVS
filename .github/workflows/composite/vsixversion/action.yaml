@@ -22,6 +22,7 @@ runs:
   steps:
     - name: Increment VSIX version
       id: version_increment
+      shell: pwsh
       run: |
         [xml]$vsixXml = Get-Content ${{ inputs.manifest-file }}
 
