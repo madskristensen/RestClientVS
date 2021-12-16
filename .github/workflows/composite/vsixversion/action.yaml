@@ -65,7 +65,7 @@ runs:
       shell: pwsh
       run: |
         $filePath = "${{ inputs.vsix-token-source-file }}"
-        $replacement = 'Version = "${{ steps.vsix_version.outputs.version-number }}"'
+        $replacement = 'Version = "${{ steps.version_increment.outputs.version }}"'
         $content = [string]::join([environment]::newline, (get-content $filePath))
         $regex = New-Object System.Text.RegularExpressions.Regex 'Version = "([0-9\\.]+)"'
         $regex.Replace($content, $replacement) | Out-File $FilePath
