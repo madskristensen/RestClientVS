@@ -51,7 +51,7 @@ jobs:
       shell: pwsh
       run: |
         $filePath = "src\RestClientVS\source.extension.cs"
-        $replacement = 'Version = "${{ env.VSIX_VERSION }}"'
+        $replacement = 'Version = "${{ steps.vsix_version.outputs.version-number }}"'
         $content = [string]::join([environment]::newline, (get-content $filePath))
         $regex = New-Object System.Text.RegularExpressions.Regex 'Version = "([0-9\\.]+)"'
         $regex.Replace($content, $replacement) | Out-File $FilePath
