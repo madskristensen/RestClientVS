@@ -53,6 +53,6 @@ runs:
 
         $attrVersion.InnerText = $version
 
-        $vsixXml.Save($vsixManifest) | Out-Null
+        $vsixXml.Save(${{ inputs.manifest-file }}) | Out-Null
 
         Write-Output "::set-output name=version::$version"
