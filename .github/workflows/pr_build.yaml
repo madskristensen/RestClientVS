@@ -41,12 +41,6 @@ jobs:
       with:
         manifest-file: src\RestClientVS\source.extension.vsixmanifest
 
-    - name: Set version for Visual Studio Extension
-      uses: cezarypiatek/VsixVersionAction@1.0
-      with:
-        version: ${{ steps.vsix_version.outputs.version-number }}
-        vsix-manifest-file: src\RestClientVS\source.extension.vsixmanifest
-
     - name: VSIX token replacement
       shell: pwsh
       run: |
