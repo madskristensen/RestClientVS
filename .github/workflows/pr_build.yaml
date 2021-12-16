@@ -33,7 +33,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Setup build dependencies
-      uses: ./.github/workflows/composite/bootstrap
+      uses: timheuer/bootstrap-dotnet@v1
 
     - name: Increment VSIX version
       id: vsix_version
