@@ -43,8 +43,11 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5
 
-      # TODO: Increment version and set in VSIX/nuspec/etc
-      # github.run_number
+    - name: Set version for Visual Studio Extension
+      uses: cezarypiatek/VsixVersionAction@1.0
+      with:
+        version: 1.0.${{ github.run_number }}
+        vsix-manifest-file: src\RestClientVS\source.extension.vsixmanifest
 
     - name: Restore
       run: nuget restore -Verbosity quiet
