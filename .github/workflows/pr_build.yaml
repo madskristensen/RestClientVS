@@ -32,17 +32,9 @@ jobs:
       
     steps:
     - uses: actions/checkout@v2
-      
-    - name: Setup dotnet
-      uses: actions/setup-dotnet@v1.9.0
-      with:
-        dotnet-version: 6.0.x
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.1
-
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1.0.5
+    - name: Setup build dependencies
+      uses: ./.github/workflows/composite/bootstrap
 
     - name: Set version for Visual Studio Extension
       uses: cezarypiatek/VsixVersionAction@1.0
