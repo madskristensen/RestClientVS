@@ -44,10 +44,10 @@ runs:
             $version = $attrVersion.InnerText
         }
 
-        if (${{ inputs.version-type }} -eq "build"){
+        if ("${{ inputs.version-type }}" -eq "build"){
             $version = New-Object Version ([int]$version.Major),([int]$version.Minor),${{ inputs.build-number }}
         }
-        elseif (${{ inputs.version-type }} -eq "revision"){
+        elseif ("${{ inputs.version-type }}" -eq "revision"){
             $version = New-Object Version ([int]$version.Major),([int]$version.Minor),([System.Math]::Max([int]$version.Build, 0)),${{ inputs.build-number }}
         }
 
