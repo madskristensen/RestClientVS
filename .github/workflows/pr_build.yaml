@@ -32,8 +32,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Setup build dependencies
-      uses: ./.github/workflows/composite/bootstrap
+    - name: Setup .NET build dependencies
+      uses: timheuer/bootstrap-dotnet@v1
 
     - name: Increment VSIX version
       id: vsix_version
