@@ -40,15 +40,7 @@ jobs:
       uses: ./.github/workflows/composite/vsixversion
       with:
         manifest-file: src\RestClientVS\source.extension.vsixmanifest
-
-    - name: VSIX token replacement
-      shell: pwsh
-      run: |
-        $filePath = "src\RestClientVS\source.extension.cs"
-        $replacement = 'Version = "${{ steps.vsix_version.outputs.version-number }}"'
-        $content = [string]::join([environment]::newline, (get-content $filePath))
-        $regex = New-Object System.Text.RegularExpressions.Regex 'Version = "([0-9\\.]+)"'
-        $regex.Replace($content, $replacement) | Out-File $FilePath
+        vsix-token-source-file: src\RestClientVS\source.extension.cs
 
     - name: Restore
       run: nuget restore -Verbosity quiet

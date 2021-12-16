@@ -13,6 +13,10 @@ inputs:
     description: 'Build number to use'
     required: true
     default: ${{ github.run_number }}
+  vsix-token-source-file:
+    description: 'Path to source.extension.vs'
+    required: false
+    default: ''
 outputs:
   version-number:
     description: 'The resulting version number'
@@ -56,3 +60,12 @@ runs:
         $vsixXml.Save("${{ inputs.manifest-file }}") | Out-Null
 
         Write-Output "::set-output name=version::$version"
+    - name: VSIX token replacement
+      if: inputs.vsix-token-source-file != '' && inputs.vsix-token-source-file != null
+      shell: pwsh
+      run: |
+        $filePath = "${{ inputs.vsix-token-source-file }}"
+        $replacement = 'Version = "${{ steps.vsix_version.outputs.version-number }}"'
+        $content = [string]::join([environment]::newline, (get-content $filePath))
+        $regex = New-Object System.Text.RegularExpressions.Regex 'Version = "([0-9\\.]+)"'
+        $regex.Replace($content, $replacement) | Out-File $FilePath
