@@ -28,7 +28,6 @@ jobs:
       DOTNET_GENERATE_ASPNET_CERTIFICATE: false
       DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: false
       DOTNET_MULTILEVEL_LOOKUP: 0
-      VSIX_VERSION: 1.0.${{ github.run_number }}
       
     steps:
     - uses: actions/checkout@v2
@@ -36,10 +35,16 @@ jobs:
     - name: Setup build dependencies
       uses: ./.github/workflows/composite/bootstrap
 
+    - name: Increment VSIX version
+      id: vsix_version
+      uses: ./.github/workflows/composite/vsixversion
+      with:
+        manifest-file: src\RestClientVS\source.extension.vsixmanifest
+
     - name: Set version for Visual Studio Extension
       uses: cezarypiatek/VsixVersionAction@1.0
       with:
-        version: ${{ env.VSIX_VERSION }}
+        version: ${{ steps.vsix_version.outputs.version-number }}
         vsix-manifest-file: src\RestClientVS\source.extension.vsixmanifest
 
     - name: VSIX token replacement
