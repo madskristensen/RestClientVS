@@ -59,7 +59,7 @@ jobs:
     - name: Test
       uses: zyborg/dotnet-tests-report@v1.4.4
       with:
-        project_path: src\RestClientVS\RestClientVS.csproj
+        project_path: test\RestClientTest\RestClientTest.csproj
         report_name: restclient_tests
         report_title: RestClient Tests
         github_token: ${{ secrets.GITHUB_TOKEN }}
