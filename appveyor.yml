@@ -2,10 +2,6 @@
 image: Visual Studio 2022
 configuration: release
 
-skip_commits:
-  files:
-    - '**/*.md'
-
 install:
 - ps: (new-object Net.WebClient).DownloadString("https://raw.github.com/madskristensen/ExtensionScripts/master/AppVeyor/vsix.ps1") | iex
 
@@ -13,9 +9,8 @@ before_build:
   - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
   - ps: Vsix-TokenReplacement src\RestClientVS\source.extension.cs 'Version = "([0-9\\.]+)"' 'Version = "{version}"'
 
-build:
-  verbosity: minimal
-  parallel: true
+build_script:
+  - msbuild /v:m -restore -m
 
 test_script:
   - dotnet test test/RestClientTest/RestClientTest.csproj
