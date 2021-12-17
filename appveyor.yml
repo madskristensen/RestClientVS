@@ -8,8 +8,8 @@ before_build:
   - ps: Vsix-TokenReplacement src\RestClientVS\source.extension.cs 'Version = "([0-9\\.]+)"' 'Version = "{version}"'
 
 build_script:
-  - nuget restore -Verbosity quiet
-  - msbuild /v:m
+  #- nuget restore -Verbosity quiet
+  - msbuild /p:configuration=Release /v:m -restore
 
 test_script:
   - dotnet test test/RestClientTest/RestClientTest.csproj
