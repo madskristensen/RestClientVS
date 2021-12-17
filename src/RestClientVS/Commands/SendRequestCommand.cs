@@ -69,21 +69,10 @@ namespace RestClientVS
             }
         }
 
-        protected override void BeforeQueryStatus(EventArgs e)
+        protected override Task InitializeCompletedAsync()
         {
-            var isRestFile = ThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                DocumentView docView = await VS.Documents.GetActiveDocumentViewAsync();
-
-                if (docView?.TextBuffer != null)
-                {
-                    return docView.TextBuffer.ContentType.IsOfType(RestLanguage.LanguageName);
-                }
-
-                return false;
-            });
-
-            Command.Visible = Command.Enabled = isRestFile;
+            Command.Supported = false;
+            return base.InitializeCompletedAsync();
         }
     }
 }

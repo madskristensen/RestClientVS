@@ -159,7 +159,7 @@ namespace RestClientTest
         [Fact]
         public async Task BodyAfterComment()
         {
-            var text = new[] { @"PATCH https://{{host}}/authors/{{name}}\r\n",
+            var text = new[] { @"TraCe https://{{host}}/authors/{{name}}\r\n",
                                 "Content-Type: at{{contentType}}svin\r\n",
                                 "#ost\r\n",
                                 "mads: ost\r\n",

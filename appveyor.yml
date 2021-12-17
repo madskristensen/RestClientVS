@@ -9,7 +9,7 @@ before_build:
 
 build_script:
   - nuget restore -Verbosity quiet
-  - msbuild src\RestClientVS\RestClientVS.csproj /p:configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
+  - msbuild /p:configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
 test_script:
   - dotnet test test/RestClientTest/RestClientTest.csproj

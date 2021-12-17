@@ -20,8 +20,6 @@
         <Parent guid="RestClientVS" id="RestCodeWin" />
         <Icon guid="ImageCatalogGuid" id="HTTPSend" />
         <CommandFlag>IconIsMoniker</CommandFlag>
-        <CommandFlag>DefaultDisabled</CommandFlag>
-        <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Send Request</ButtonText>
@@ -30,6 +28,10 @@
       </Button>
     </Buttons>
   </Commands>
+
+  <VisibilityConstraints>
+    <VisibilityItem guid="RestClientVS" id="SendRequest" context="RestEditorFactory" />
+  </VisibilityConstraints>
 
   <KeyBindings>
     <KeyBinding guid="RestClientVS" id="SendRequest" editor="RestEditorFactory" key1="S" mod1="Control Alt" />

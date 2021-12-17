@@ -8,7 +8,7 @@ namespace RestClientVS
     public class RestLanguage : LanguageBase
     {
         public const string LanguageName = "Rest";
-        public static readonly string[] Extensions = { ".http", ".rest" };
+        public const string FileExtension = ".http";
 
         public RestLanguage(object site) : base(site)
         {
@@ -17,7 +17,7 @@ namespace RestClientVS
 
         public override string Name => LanguageName;
 
-        public override string[] FileExtensions => Extensions;
+        public override string[] FileExtensions => new[] { FileExtension };
 
         public override void SetDefaultPreferences(LanguagePreferences preferences)
         {

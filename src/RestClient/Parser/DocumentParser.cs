@@ -8,6 +8,11 @@ namespace RestClient
 {
     public partial class Document
     {
+        private readonly Regex _regexUrl = new(@"^((?<method>get|post|put|delete|head|options|trace)\s*)(?<url>.+)", RegexOptions.IgnoreCase);
+        private readonly Regex _regexHeader = new(@"^(?<name>[^\s]+)?([\s]+)?(?<operator>:)(?<value>.+)");
+        private readonly Regex _regexVariable = new(@"^(?<name>@[^\s]+)\s*(?<equals>=)\s*(?<value>.+)");
+        private readonly Regex _regexRef = new(@"(?<open>{{)(?<value>\$?[\w]+( [\w]+)?)?(?<close>}})");
+
         public bool IsParsing { get; private set; }
 
         public Task ParseAsync()
@@ -54,9 +59,9 @@ namespace RestClient
                 items.Add(new ParseItem(start, line, this, ItemType.Comment));
             }
             // Variable declaration
-            else if (trimmedLine.StartsWith("@"))
+            else if (IsMatch(_regexVariable, trimmedLine, out Match matchVar))
             {
-                items.AddRange(ParseVariable(start, line));
+                items.AddRange(ParseVariable(matchVar, start, line));
             }
             // Request body
             else if (IsBodyToken(line, tokens))
@@ -71,17 +76,17 @@ namespace RestClient
                 items.Add(new ParseItem(start, line, this, ItemType.EmptyLine));
             }
             // Request url
-            else if (trimmedLine.Contains("://"))
+            else if (IsMatch(_regexUrl, trimmedLine, out Match matchUrl))
             {
-                items.AddRange(ParseUrlToken(start, line));
+                items.AddRange(ParseUrlToken(matchUrl, start, line));
             }
             // Header
-            else if (trimmedLine.Contains(":") && tokens.Any())
+            else if (tokens.Any() && IsMatch(_regexHeader, trimmedLine, out Match matchHeader))
             {
                 ParseItem? last = tokens.Last();
                 if (last?.Type == ItemType.HeaderValue || last?.Type == ItemType.Url || last?.Type == ItemType.Comment)
                 {
-                    items.AddRange(ParseRequestHeaders(start, line));
+                    items.AddRange(ParseRequestHeaders(matchHeader, start, line));
                 }
             }
 
@@ -117,74 +122,61 @@ namespace RestClient
             return false;
         }
 
-        private IEnumerable<ParseItem> ParseUrlToken(int start, string line)
+        public static bool IsMatch(Regex regex, string line, out Match match)
         {
-            var regex = new Regex(@"^((?<method>get|post|put|delete|patch|head|options|connect|trace)\s*)(?<url>.+://.+)", RegexOptions.IgnoreCase);
-            Match match = regex.Match(line);
-
-            if (match.Success)
-            {
-                Group? methodGroup = match.Groups["method"];
-                Group? urlGroup = match.Groups["url"];
-
-                var method = new ParseItem(start + methodGroup.Index, methodGroup.Value, this, ItemType.Method);
-                var url = new ParseItem(start + urlGroup.Index, urlGroup.Value, this, ItemType.Url);
-
-                AddVariableReferences(method);
-                AddVariableReferences(url);
-
-                yield return method;
-                yield return url;
-            }
+            match = regex.Match(line);
+            return match.Success;
         }
 
-        private IEnumerable<ParseItem> ParseRequestHeaders(int start, string line)
+        private IEnumerable<ParseItem> ParseUrlToken(Match match, int start, string line)
         {
-            var regex = new Regex(@"^(?<name>[^\s]+)?([\s]+)?(?<operator>:)(?<value>.+)");
-            Match match = regex.Match(line);
+            Group? methodGroup = match.Groups["method"];
+            Group? urlGroup = match.Groups["url"];
 
-            if (match.Success)
-            {
-                Group? nameGroup = match.Groups["name"];
-                Group? valueGroup = match.Groups["value"];
+            var method = new ParseItem(start + methodGroup.Index, methodGroup.Value, this, ItemType.Method);
+            var url = new ParseItem(start + urlGroup.Index, urlGroup.Value, this, ItemType.Url);
 
-                var name = new ParseItem(start + nameGroup.Index, nameGroup.Value, this, ItemType.HeaderName);
-                var value = new ParseItem(start + valueGroup.Index, valueGroup.Value, this, ItemType.HeaderValue);
+            AddVariableReferences(method);
+            AddVariableReferences(url);
 
-                AddVariableReferences(name);
-                AddVariableReferences(value);
-
-                yield return name;
-                yield return value;
-            }
+            yield return method;
+            yield return url;
         }
 
-        private IEnumerable<ParseItem> ParseVariable(int start, string line)
+        private IEnumerable<ParseItem> ParseRequestHeaders(Match match, int start, string line)
         {
-            var regex = new Regex(@"^(?<name>@[^\s]+)\s*(?<equals>=)\s*(?<value>.+)");
-            Match match = regex.Match(line);
+            Group? nameGroup = match.Groups["name"];
+            Group? valueGroup = match.Groups["value"];
 
-            if (match.Success)
-            {
-                Group? nameGroup = match.Groups["name"];
-                Group? valueGroup = match.Groups["value"];
+            var name = new ParseItem(start + nameGroup.Index, nameGroup.Value, this, ItemType.HeaderName);
+            var value = new ParseItem(start + valueGroup.Index, valueGroup.Value, this, ItemType.HeaderValue);
 
-                var name = new ParseItem(start + nameGroup.Index, nameGroup.Value, this, ItemType.VariableName);
-                var value = new ParseItem(start + valueGroup.Index, valueGroup.Value, this, ItemType.VariableValue);
+            AddVariableReferences(name);
+            AddVariableReferences(value);
 
-                AddVariableReferences(value);
+            yield return name;
+            yield return value;
+        }
 
-                yield return name;
-                yield return value;
-            }
+        private IEnumerable<ParseItem> ParseVariable(Match match, int start, string line)
+        {
+            Group? nameGroup = match.Groups["name"];
+            Group? valueGroup = match.Groups["value"];
+
+            var name = new ParseItem(start + nameGroup.Index, nameGroup.Value, this, ItemType.VariableName);
+            var value = new ParseItem(start + valueGroup.Index, valueGroup.Value, this, ItemType.VariableValue);
+
+            AddVariableReferences(value);
+
+            yield return name;
+            yield return value;
         }
 
         private void AddVariableReferences(ParseItem token)
         {
-            var regex = new Regex(@"(?<open>{{)(?<value>\$?[\w]+( [\w]+)?)?(?<close>}})");
             var start = token.Start;
 
-            foreach (Match match in regex.Matches(token.Text))
+            foreach (Match match in _regexRef.Matches(token.Text))
             {
                 Group? openGroup = match.Groups["open"];
                 Group? valueGroup = match.Groups["value"];
