@@ -8,7 +8,7 @@ inputs:
     default: 'build'
   manifest-file:
     description: 'Path to VSIX manifest'
-    requried: true
+    required: true
   build-number:
     description: 'Build number to use'
     required: true
