@@ -1,5 +1,10 @@
+# yaml-language-server: $schema=https://json.schemastore.org/appveyor.json
 image: Visual Studio 2022
 configuration: release
+
+skip_commits:
+  files:
+    - '**/*.md'
 
 install:
 - ps: (new-object Net.WebClient).DownloadString("https://raw.github.com/madskristensen/ExtensionScripts/master/AppVeyor/vsix.ps1") | iex
@@ -8,9 +13,9 @@ before_build:
   - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
   - ps: Vsix-TokenReplacement src\RestClientVS\source.extension.cs 'Version = "([0-9\\.]+)"' 'Version = "{version}"'
 
-build_script:
-  - nuget restore -Verbosity quiet
-  - msbuild /v:m
+build:
+  verbosity: minimal
+  parallel: true
 
 test_script:
   - dotnet test test/RestClientTest/RestClientTest.csproj
