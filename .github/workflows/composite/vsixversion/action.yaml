@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: 'Increment VSIX Version'
+description: 'Increments the VSIX build version'
+inputs:
+  version-type:
+    description: 'Version type - build or revision'
+    required: true
+    default: 'build'
+  manifest-file:
+    description: 'Path to VSIX manifest'
+    requried: true
+  build-number:
+    description: 'Build number to use'
+    required: true
+    default: ${{ github.run_number }}
+  vsix-token-source-file:
+    description: 'Path to source.extension.vs'
+    required: false
+    default: ''
+outputs:
+  version-number:
+    description: 'The resulting version number'
+    value: ${{ steps.version_increment.outputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Increment VSIX version
+      id: version_increment
+      shell: pwsh
+      run: |
+        [xml]$vsixXml = Get-Content ${{ inputs.manifest-file }}
+
+        $ns = New-Object System.Xml.XmlNamespaceManager $vsixXml.NameTable
+        $ns.AddNamespace("ns", $vsixXml.DocumentElement.NamespaceURI) | Out-Null
+
+        $attrVersion = ""
+
+        if ($vsixXml.SelectSingleNode("//ns:Identity", $ns)){ # VS2012 format
+            $attrVersion = $vsixXml.SelectSingleNode("//ns:Identity", $ns).Attributes["Version"]
+        }
+        elseif ($vsixXml.SelectSingleNode("//ns:Version", $ns)){ # VS2010 format
+            $attrVersion = $vsixXml.SelectSingleNode("//ns:Version", $ns)
+        }
+
+        [Version]$version = $attrVersion.Value
+
+        if (!$attrVersion.Value){
+            $version = $attrVersion.InnerText
+        }
+
+        if ("${{ inputs.version-type }}" -eq "build"){
+            $version = New-Object Version ([int]$version.Major),([int]$version.Minor),${{ inputs.build-number }}
+        }
+        elseif ("${{ inputs.version-type }}" -eq "revision"){
+            $version = New-Object Version ([int]$version.Major),([int]$version.Minor),([System.Math]::Max([int]$version.Build, 0)),${{ inputs.build-number }}
+        }
+
+        $attrVersion.InnerText = $version
+
+        $vsixXml.Save("${{ inputs.manifest-file }}") | Out-Null
+
+        Write-Output "::set-output name=version::$version"
+    - name: VSIX token replacement
+      if: inputs.vsix-token-source-file != '' && inputs.vsix-token-source-file != null
+      shell: pwsh
+      run: |
+        $filePath = "${{ inputs.vsix-token-source-file }}"
+        $replacement = 'Version = "${{ steps.version_increment.outputs.version }}"'
+        $content = [string]::join([environment]::newline, (get-content $filePath))
+        $regex = New-Object System.Text.RegularExpressions.Regex 'Version = "([0-9\\.]+)"'
+        $regex.Replace($content, $replacement) | Out-File $FilePath

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: 'Setup build dependencies'
+description: 'Sets up the .NET dependencies of MSBuild, SDK, NuGet'
+inputs:
+  dotnet-version:
+    description: 'What .NET SDK version to use'
+    required: true
+    default: 6.0.x
+runs:
+  using: "composite"
+  steps:
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1.9.0
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.5
