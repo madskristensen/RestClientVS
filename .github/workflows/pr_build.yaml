@@ -57,13 +57,12 @@ jobs:
       run: msbuild /p:Configuration=Release /v:m -restore /p:OutDir=../../built
 
     - name: Test
-      uses: zyborg/dotnet-tests-report@v1.4.4
+      uses: zyborg/dotnet-tests-report@v1
       with:
         project_path: test\RestClientTest\RestClientTest.csproj
         report_name: restclient_tests
         report_title: RestClient Tests
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        set_check_status_from_test_outcome: true
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
