@@ -1,7 +1,14 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: "PR Build"
+name: "Build"
 
 on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.gitignore'
+      - '**/*.gitattributes'
   pull_request:
     branches:
       - master
@@ -19,6 +26,8 @@ on:
       
 jobs:
   build:
+    outputs:
+      version: ${{ steps.vsix_version.outputs.version-number }}
     name: Build 
     runs-on: windows-2022
     env:
@@ -34,25 +43,57 @@ jobs:
 
     - name: Setup .NET build dependencies
       uses: timheuer/bootstrap-dotnet@v1
+      with:
+        nuget: 'false'
 
     - name: Increment VSIX version
       id: vsix_version
-      uses: ./.github/workflows/composite/vsixversion
+      uses: timheuer/vsix-version-stamp@v1
       with:
         manifest-file: src\RestClientVS\source.extension.vsixmanifest
         vsix-token-source-file: src\RestClientVS\source.extension.cs
 
-    - name: Restore
-      run: nuget restore -Verbosity quiet
-
     - name: Build
-      run: msbuild src\RestClientVS\RestClientVS.csproj /p:Configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m /p:OutDir=../../built
+      run: msbuild /p:Configuration=Release /v:m -restore /p:OutDir=../../built
 
     - name: Test
-      run: dotnet test test/RestClientTest/RestClientTest.csproj
+      uses: zyborg/dotnet-tests-report@v1
+      with:
+        project_path: test\RestClientTest\RestClientTest.csproj
+        report_name: restclient_tests
+        report_title: RestClient Tests
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        set_check_status_from_test_outcome: true
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: RestClientVS.vsix
         path: built/**/*.vsix
+
+  publish:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Download Package artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: RestClientVS.vsix
+
+      - name: Upload to Open VSIX
+        uses: timheuer/openvsixpublish@v1
+        with:
+          vsix-file: RestClientVS.vsix
+
+      - name: Tag and Release
+        id: tag_release
+        uses: softprops/action-gh-release@v0.1.13
+        with:
+          body: Release ${{ needs.build.outputs.version }}
+          tag_name: ${{ needs.build.outputs.version }}
+          files: |
+            **/*.vsix
