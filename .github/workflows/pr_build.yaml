@@ -63,6 +63,7 @@ jobs:
         report_name: restclient_tests
         report_title: RestClient Tests
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        set_check_status_from_test_outcome: true
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
