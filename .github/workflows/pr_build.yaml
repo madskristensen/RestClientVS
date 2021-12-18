@@ -81,15 +81,15 @@ jobs:
 
       - name: Download Package artifact
         uses: actions/download-artifact@v2
-        with:
-          name: RestClientVS.vsix
 
       - name: Upload to Open VSIX
         uses: timheuer/openvsixpublish@v1
         with:
-          vsix-file: RestClientVS.vsix
+          vsix-file: | 
+            **/*.vsix
 
       - name: Tag and Release
+        if: ${{ contains(github.event.head_commit.message, '[release]') }}
         id: tag_release
         uses: softprops/action-gh-release@v0.1.13
         with:
