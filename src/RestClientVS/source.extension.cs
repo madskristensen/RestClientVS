@@ -11,7 +11,7 @@ namespace RestClientVS
         public const string Name = "Rest Client";
         public const string Description = @"REST Client allows you to send HTTP request and view the response in Visual Studio directly.. Based on the popular VS Code extension";
         public const string Language = "en-US";
-        public const string Version = "1.0.3";
+        public const string Version = "1.1";
         public const string Author = "Mads Kristensen";
         public const string Tags = "rest, http, postman";
     }
