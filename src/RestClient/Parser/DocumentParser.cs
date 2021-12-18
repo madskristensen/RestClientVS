@@ -23,28 +23,33 @@ namespace RestClient
             {
                 var start = 0;
 
-                List<ParseItem> tokens = new();
-
-                foreach (var line in _lines)
+                try
                 {
-                    IEnumerable<ParseItem>? current = ParseLine(start, line, tokens);
+                    List<ParseItem> tokens = new();
 
-                    if (current != null)
+                    foreach (var line in _lines)
                     {
-                        tokens.AddRange(current);
+                        IEnumerable<ParseItem>? current = ParseLine(start, line, tokens);
+
+                        if (current != null)
+                        {
+                            tokens.AddRange(current);
+                        }
+
+                        start += line.Length;
                     }
 
-                    start += line.Length;
+                    Items = tokens;
+
+                    OrganizeItems();
+                    ExpandVariables();
+                    ValidateDocument();
                 }
-
-                Items = tokens;
-
-                OrganizeItems();
-                ExpandVariables();
-                ValidateDocument();
-
-                IsParsing = false;
-                Parsed?.Invoke(this, EventArgs.Empty);
+                finally
+                {
+                    IsParsing = false;
+                    Parsed?.Invoke(this, EventArgs.Empty);
+                }
             });
         }
 
@@ -195,20 +200,15 @@ namespace RestClient
 
             foreach (ParseItem? item in Items)
             {
-                if (item.Next == null)
-                {
-                    continue;
-                }
-
                 if (item.Type == ItemType.VariableName)
                 {
-                    var variable = new Variable(item, item.Next);
+                    var variable = new Variable(item, item.Next!);
                     variables.Add(variable);
                 }
 
                 else if (item.Type == ItemType.Method)
                 {
-                    currentRequest = new Request(this, item, item.Next);
+                    currentRequest = new Request(this, item, item.Next!);
 
                     requests.Add(currentRequest);
                     currentRequest?.Children?.Add(currentRequest.Method);
@@ -219,7 +219,7 @@ namespace RestClient
                 {
                     if (item.Type == ItemType.HeaderName)
                     {
-                        var header = new Header(item, item.Next);
+                        var header = new Header(item, item.Next!);
 
                         currentRequest?.Headers?.Add(header);
                         currentRequest?.Children?.Add(header.Name);

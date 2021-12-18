@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace RestClient
 {
@@ -53,7 +54,7 @@ namespace RestClient
             get
             {
                 var index = Document.Items.IndexOf(this);
-                return index < Document.Items.Count ? Document.Items[index + 1] : null;
+                return Document.Items.ElementAtOrDefault(index + 1);
             }
         }
 
