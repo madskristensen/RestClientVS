@@ -10,10 +10,10 @@ before_build:
   - ps: Vsix-TokenReplacement src\RestClientVS\source.extension.cs 'Version = "([0-9\\.]+)"' 'Version = "{version}"'
 
 build_script:
-  - msbuild /v:m -restore -m
+  - msbuild /v:m -restore
 
 test_script:
   - dotnet test test/RestClientTest/RestClientTest.csproj
 
 deploy_script:
-  - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
+  - ps: Vsix-PushArtifacts #| Vsix-PublishToGallery
