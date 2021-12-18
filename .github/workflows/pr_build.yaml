@@ -80,7 +80,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Download Package artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v2 
+        with:
+          name: ${{ github.event.repository.name }}.vsix
 
       - name: Upload to Open VSIX
         uses: timheuer/openvsixpublish@v1
