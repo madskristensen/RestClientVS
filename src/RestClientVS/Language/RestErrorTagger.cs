@@ -40,8 +40,9 @@ namespace MarkdownEditor.Outlining
 
             SnapshotSpan span = spans[0];
             ITextSnapshot snapshot = _buffer.CurrentSnapshot;
-            IEnumerable<ParseItem> tokens = _document.Tokens.Where(t => t.Start <= span.Start && t.End >= span.End).ToArray();
+            IEnumerable<ParseItem> tokens = _document.Items.Where(t => t.Start <= span.Start && t.End >= span.End).ToArray();
 
+            // Variable references
             foreach (RestClient.Reference reference in tokens.SelectMany(t => t.References))
             {
                 if (!reference.Value.IsValid)
@@ -49,6 +50,21 @@ namespace MarkdownEditor.Outlining
                     var tooltip = string.Join(Environment.NewLine, reference.Value.Errors);
 
                     var simpleSpan = new Span(reference.Value.Start, reference.Value.Length);
+                    var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
+                    var errorTag = new ErrorTag(PredefinedErrorTypeNames.CompilerError, tooltip);
+
+                    yield return new TagSpan<IErrorTag>(snapShotSpan, errorTag);
+                }
+            }
+
+            // Tokens
+            foreach (ParseItem item in _document.Items)
+            {
+                if (!item.IsValid)
+                {
+                    var tooltip = string.Join(Environment.NewLine, item.Errors);
+
+                    var simpleSpan = new Span(item.Start, item.Length);
                     var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
                     var errorTag = new ErrorTag(PredefinedErrorTypeNames.CompilerError, tooltip);
 

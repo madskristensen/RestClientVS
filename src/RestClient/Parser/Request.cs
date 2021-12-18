@@ -8,15 +8,17 @@ namespace RestClient
     {
         private readonly Document _document;
 
-        public Request(Document document)
+        public Request(Document document, ParseItem method, ParseItem url)
         {
             _document = document;
+            Method = method;
+            Url = url;
         }
 
         public List<ParseItem>? Children { get; set; } = new List<ParseItem>();
 
-        public ParseItem? Method { get; set; }
-        public ParseItem? Url { get; set; }
+        public ParseItem Method { get; }
+        public ParseItem Url { get; }
 
         public List<Header>? Headers { get; } = new();
 

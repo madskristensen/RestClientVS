@@ -14,7 +14,7 @@ namespace RestClient
             _ = ParseAsync();
         }
 
-        public List<ParseItem> Tokens { get; private set; } = new List<ParseItem>();
+        public List<ParseItem> Items { get; private set; } = new List<ParseItem>();
 
         public Dictionary<string, string>? VariablesExpanded => _variables;
 
@@ -38,14 +38,14 @@ namespace RestClient
 
             foreach (Variable variable in Variables)
             {
-                var value = variable.Value!.Text;
+                var value = variable.Value.Text;
 
                 foreach (var key in expandedVars.Keys)
                 {
                     value = value.Replace("{{" + key + "}}", expandedVars[key].Trim());
                 }
 
-                expandedVars[variable.Name!.Text.Substring(1)] = value;
+                expandedVars[variable.Name.Text.Substring(1)] = value;
             }
 
             _variables = expandedVars;
@@ -53,14 +53,11 @@ namespace RestClient
 
         public ParseItem? GetTokenFromPosition(int position)
         {
-            ParseItem token = Tokens.LastOrDefault(t => t.Contains(position));
+            ParseItem? item = Items.LastOrDefault(t => t.Contains(position));
+            ParseItem? reference = item.References.FirstOrDefault(v => v.Value != null && v.Value.Contains(position))?.Value;
 
-            return GetVariableFromPosition(token, position);
-        }
-
-        private ParseItem? GetVariableFromPosition(ParseItem token, int position)
-        {
-            return token.References.FirstOrDefault(v => v.Value != null && v.Value.Contains(position))?.Value;
+            // Return the reference if it exist; otherwise the item
+            return reference ?? item;
         }
     }
 }

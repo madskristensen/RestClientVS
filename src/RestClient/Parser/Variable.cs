@@ -2,7 +2,13 @@
 {
     public class Variable
     {
-        public ParseItem? Name { get; set; }
-        public ParseItem? Value { get; set; }
+        public Variable(ParseItem name, ParseItem value)
+        {
+            Name = name;
+            Value = value;
+        }
+
+        public ParseItem Name { get; }
+        public ParseItem Value { get; }
     }
 }

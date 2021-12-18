@@ -36,7 +36,7 @@ namespace RestClientVS.QuickInfo
                 Document doc = RestDocument.FromTextbuffer(_buffer);
                 var position = triggerPoint.Value.Position;
 
-                ParseItem token = doc.Tokens.LastOrDefault(t => t.Contains(position));
+                ParseItem token = doc.Items.LastOrDefault(t => t.Contains(position));
 
                 if (token != null && token.Text.Contains("{{"))
                 {

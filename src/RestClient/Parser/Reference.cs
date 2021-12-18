@@ -2,8 +2,15 @@
 {
     public class Reference
     {
-        public ParseItem? Open { get; set; }
-        public ParseItem? Value { get; set; }
-        public ParseItem? Close { get; set; }
+        public Reference(ParseItem open, ParseItem value, ParseItem close)
+        {
+            Open = open;
+            Value = value;
+            Close = close;
+        }
+
+        public ParseItem Open { get; }
+        public ParseItem Value { get; }
+        public ParseItem Close { get; }
     }
 }

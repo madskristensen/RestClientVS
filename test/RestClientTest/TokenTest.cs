@@ -18,7 +18,7 @@ namespace RestClientTest
         {
             var doc = Document.FromLines(line);
             await doc.WaitForParsingCompleteAsync();
-            ParseItem first = doc.Tokens?.FirstOrDefault();
+            ParseItem first = doc.Items?.FirstOrDefault();
 
             Assert.NotNull(first);
             Assert.Equal(ItemType.Method, first.Type);
@@ -133,7 +133,7 @@ namespace RestClientTest
         {
             var doc = Document.FromLines(line);
             await doc.WaitForParsingCompleteAsync();
-            ParseItem first = doc.Tokens?.FirstOrDefault();
+            ParseItem first = doc.Items?.FirstOrDefault();
 
             Assert.NotNull(first);
             Assert.Equal(ItemType.EmptyLine, first.Type);
@@ -151,7 +151,7 @@ namespace RestClientTest
 
             var doc = Document.FromLines(text);
             await doc.WaitForParsingCompleteAsync();
-            ParseItem comment = doc.Tokens.ElementAt(3);
+            ParseItem comment = doc.Items.ElementAt(3);
 
             Assert.Equal(23, comment.Start);
         }
@@ -189,7 +189,7 @@ namespace RestClientTest
 
             var doc = Document.FromLines(text);
             await doc.WaitForParsingCompleteAsync();
-            ParseItem name = doc.Tokens.FirstOrDefault();
+            ParseItem name = doc.Items.FirstOrDefault();
 
             Assert.Equal(0, name.Start);
             Assert.Equal(5, name.Length);
@@ -208,7 +208,7 @@ namespace RestClientTest
             var doc = Document.FromLines(text);
             await doc.WaitForParsingCompleteAsync();
 
-            Assert.Equal(7, doc.Tokens.Count);
+            Assert.Equal(7, doc.Items.Count);
         }
     }
 }

@@ -43,8 +43,8 @@ namespace RestClient
         {
             get
             {
-                var index = Document.Tokens.IndexOf(this);
-                return index > 0 ? Document.Tokens[index - 1] : null;
+                var index = Document.Items.IndexOf(this);
+                return index > 0 ? Document.Items[index - 1] : null;
             }
         }
 
@@ -52,8 +52,8 @@ namespace RestClient
         {
             get
             {
-                var index = Document.Tokens.IndexOf(this);
-                return index < Document.Tokens.Count ? Document.Tokens[index + 1] : null;
+                var index = Document.Items.IndexOf(this);
+                return index < Document.Items.Count ? Document.Items[index + 1] : null;
             }
         }
 

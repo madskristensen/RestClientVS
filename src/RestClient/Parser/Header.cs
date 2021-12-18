@@ -2,7 +2,13 @@
 {
     public class Header
     {
-        public ParseItem? Name { get; set; }
-        public ParseItem? Value { get; set; }
+        public Header(ParseItem name, ParseItem value)
+        {
+            Name = name;
+            Value = value;
+        }
+
+        public ParseItem Name { get; }
+        public ParseItem Value { get; }
     }
 }

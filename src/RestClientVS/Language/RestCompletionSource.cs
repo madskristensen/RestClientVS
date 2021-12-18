@@ -72,7 +72,7 @@ namespace RestClientVS.Completion
             }
 
             // Variable references
-            ParseItem currentToken = document.Tokens.LastOrDefault(v => v.Contains(triggerLocation.Position));
+            ParseItem currentToken = document.Items.LastOrDefault(v => v.Contains(triggerLocation.Position));
             RestClient.Reference currentReference = currentToken?.References.FirstOrDefault(v => v.Value.Contains(triggerLocation.Position));
             if (currentReference != null)
             {
@@ -99,7 +99,7 @@ namespace RestClientVS.Completion
             ParseItem current = null;
             hasEmptyLine = false;
 
-            foreach (ParseItem token in document.Tokens)
+            foreach (ParseItem token in document.Items)
             {
                 if (token.End > point.Position)
                 {

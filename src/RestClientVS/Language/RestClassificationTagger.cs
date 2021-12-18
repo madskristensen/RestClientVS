@@ -54,7 +54,7 @@ namespace RestClientVS.Classify
 
             foreach (SnapshotSpan span in spans)
             {
-                foreach (ParseItem item in _document.Tokens.Where(t => t.Start < span.End && t.End > span.Start))
+                foreach (ParseItem item in _document.Items.Where(t => t.Start < span.End && t.End > span.Start))
                 {
                     if (_map.ContainsKey(item.Type) && item.End <= span.Snapshot.Length)
                     {
