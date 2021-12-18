@@ -63,12 +63,6 @@ namespace RestClient
             {
                 items.Add(ToParseItem(line, start, ItemType.Comment, false));
             }
-            // Variable declaration
-            else if (IsMatch(_regexVariable, trimmedLine, out Match matchVar))
-            {
-                items.Add(ToParseItem(matchVar, start, "name", ItemType.VariableName, false));
-                items.Add(ToParseItem(matchVar, start, "value", ItemType.VariableValue, false));
-            }
             // Request body
             else if (IsBodyToken(line, tokens))
             {
@@ -79,6 +73,12 @@ namespace RestClient
             {
                 items.Add(ToParseItem(line, start, ItemType.EmptyLine));
             }
+            // Variable declaration
+            else if (IsMatch(_regexVariable, trimmedLine, out Match matchVar))
+            {
+                items.Add(ToParseItem(matchVar, start, "name", ItemType.VariableName, false));
+                items.Add(ToParseItem(matchVar, start, "value", ItemType.VariableValue, false));
+            }
             // Request url
             else if (IsMatch(_regexUrl, trimmedLine, out Match matchUrl))
             {
@@ -86,10 +86,10 @@ namespace RestClient
                 items.Add(ToParseItem(matchUrl, start, "url", ItemType.Url));
             }
             // Header
-            else if (tokens.Any() && IsMatch(_regexHeader, trimmedLine, out Match matchHeader))
+            else if (tokens.Count > 0 && IsMatch(_regexHeader, trimmedLine, out Match matchHeader))
             {
-                ParseItem? last = tokens.Last();
-                if (last?.Type == ItemType.HeaderValue || last?.Type == ItemType.Url || last?.Type == ItemType.Comment)
+                ParseItem? prev = tokens.Last();
+                if (prev?.Type == ItemType.HeaderValue || prev?.Type == ItemType.Url || prev?.Type == ItemType.Comment)
                 {
                     items.Add(ToParseItem(matchHeader, start, "name", ItemType.HeaderName));
                     items.Add(ToParseItem(matchHeader, start, "value", ItemType.HeaderValue));
@@ -101,19 +101,19 @@ namespace RestClient
 
         private bool IsBodyToken(string line, List<ParseItem> tokens)
         {
-            ParseItem? last = tokens.LastOrDefault();
+            ParseItem? prev = tokens.LastOrDefault();
 
-            if (last != null && string.IsNullOrWhiteSpace(last.Text) && string.IsNullOrWhiteSpace(line))
+            if (prev != null && string.IsNullOrWhiteSpace(prev.Text) && string.IsNullOrWhiteSpace(line))
             {
                 return false;
             }
 
-            if (last?.Type == ItemType.Body)
+            if (prev?.Type == ItemType.Body)
             {
                 return true;
             }
 
-            if (last?.Type != ItemType.EmptyLine)
+            if (prev?.Type != ItemType.EmptyLine)
             {
                 return false;
             }
