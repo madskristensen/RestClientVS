@@ -3,7 +3,7 @@
     <Metadata>
         <Identity Id="RestClientVS.a7b4a362-3ce8-4953-9b19-a35166f2cbfd" Version="1.1" Language="en-US" Publisher="Mads Kristensen" />
         <DisplayName>Rest Client</DisplayName>
-        <Description xml:space="preserve">REST Client allows you to send HTTP request and view the response in Visual Studio directly.. Based on the popular VS Code extension</Description>
+        <Description xml:space="preserve">REST Client allows you to send HTTP request and view the response in Visual Studio directly. Based on the popular VS Code extension</Description>
         <MoreInfo>https://github.com/madskristensen/RestClientVS</MoreInfo>
         <License>Resources\LICENSE</License>
         <Icon>Resources\Icon.png</Icon>

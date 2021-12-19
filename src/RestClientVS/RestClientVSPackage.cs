@@ -17,6 +17,7 @@ namespace RestClientVS
     [ProvideLanguageService(typeof(RestLanguage), RestLanguage.LanguageName, 0)]
     [ProvideLanguageExtension(typeof(RestLanguage), RestLanguage.FileExtension)]
     [ProvideFileIcon(RestLanguage.FileExtension, "KnownMonikers.WebScript")]
+    [ProvideBraceCompletion(RestLanguage.LanguageName)]
 
     [ProvideLanguageEditorOptionPage(typeof(OptionsProvider.GeneralOptions), RestLanguage.LanguageName, null, "Advanced", null, new[] { "http", "rest", "timeout" })]
 
