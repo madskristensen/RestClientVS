@@ -54,7 +54,7 @@ jobs:
         vsix-token-source-file: src\RestClientVS\source.extension.cs
 
     - name: Build
-      run: msbuild /p:Configuration=Release /v:m -restore /p:OutDir=../../built
+      run: msbuild /p:Configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m -restore /p:OutDir=../../built
 
     - name: Test
       uses: zyborg/dotnet-tests-report@v1
