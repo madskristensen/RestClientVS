@@ -54,7 +54,7 @@ namespace RestClient
         public ParseItem? GetTokenFromPosition(int position)
         {
             ParseItem? item = Items.LastOrDefault(t => t.Contains(position));
-            ParseItem? reference = item.References.FirstOrDefault(v => v.Value != null && v.Value.Contains(position))?.Value;
+            ParseItem? reference = item?.References.FirstOrDefault(v => v.Value != null && v.Value.Contains(position))?.Value;
 
             // Return the reference if it exist; otherwise the item
             return reference ?? item;
