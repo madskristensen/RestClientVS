@@ -16,7 +16,7 @@ namespace RestClient.Client
 
             var handler = new HttpClientHandler
             {
-                AllowAutoRedirect = false,
+                AllowAutoRedirect = true,
                 UseDefaultCredentials = true,
             };
 
