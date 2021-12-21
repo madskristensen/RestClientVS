@@ -14,6 +14,7 @@ namespace RestClient
         private static readonly Regex _regexRef = new(@"(?<open>{{)(?<value>\$?[\w]+( [\w]+)?)?(?<close>}})", RegexOptions.Compiled);
 
         public bool IsParsing { get; private set; }
+        public bool IsValid { get; set; }
 
         public Task ParseAsync()
         {
@@ -77,7 +78,7 @@ namespace RestClient
             else if (IsMatch(_regexVariable, trimmedLine, out Match matchVar))
             {
                 items.Add(ToParseItem(matchVar, start, "name", ItemType.VariableName, false));
-                items.Add(ToParseItem(matchVar, start, "value", ItemType.VariableValue, false));
+                items.Add(ToParseItem(matchVar, start, "value", ItemType.VariableValue, true));
             }
             // Request url
             else if (IsMatch(_regexUrl, trimmedLine, out Match matchUrl))
@@ -168,6 +169,7 @@ namespace RestClient
 
         private void ValidateDocument()
         {
+            IsValid = true;
             foreach (ParseItem item in Items)
             {
                 // Variable references
@@ -175,7 +177,7 @@ namespace RestClient
                 {
                     if (VariablesExpanded != null && reference.Value != null && !VariablesExpanded.ContainsKey(reference.Value.Text))
                     {
-                        reference.Value.Errors.Add($"The variable \"{reference.Value.Text}\" is not defined.");
+                        reference.Value.AddError($"The variable \"{reference.Value.Text}\" is not defined.");
                     }
                 }
 
@@ -186,7 +188,7 @@ namespace RestClient
 
                     if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
                     {
-                        item.Errors.Add($"\"{uri}\" is not a valid absolute URI");
+                        item.AddError($"\"{uri}\" is not a valid absolute URI");
                     }
                 }
             }

@@ -47,11 +47,6 @@ namespace RestClientVS.Classify
 
         public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0)
-            {
-                yield return null;
-            }
-
             foreach (SnapshotSpan span in spans)
             {
                 foreach (ParseItem item in _document.Items.Where(t => t.Start < span.End && t.End > span.Start))

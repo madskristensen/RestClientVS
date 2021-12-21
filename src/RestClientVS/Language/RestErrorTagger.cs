@@ -33,42 +33,43 @@ namespace MarkdownEditor.Outlining
 
         public IEnumerable<ITagSpan<IErrorTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0 || _document.IsParsing)
+            if (_document.IsParsing || _document.IsValid)
             {
-                yield return null;
+                yield break;
             }
 
-            SnapshotSpan span = spans[0];
             ITextSnapshot snapshot = _buffer.CurrentSnapshot;
-            IEnumerable<ParseItem> tokens = _document.Items.Where(t => t.Start <= span.Start && t.End >= span.End).ToArray();
 
-            // Variable references
-            foreach (RestClient.Reference reference in tokens.SelectMany(t => t.References))
+            foreach (SnapshotSpan span in spans.Where(s => !s.IsEmpty))
             {
-                if (!reference.Value.IsValid)
+                IEnumerable<ParseItem> tokens = _document.Items.Where(t => t.Start < span.End && t.End > span.Start);
+
+                foreach (ParseItem item in _document.Items)
                 {
-                    var tooltip = string.Join(Environment.NewLine, reference.Value.Errors);
+                    if (!item.IsValid)
+                    {
+                        var tooltip = string.Join(Environment.NewLine, item.Errors);
 
-                    var simpleSpan = new Span(reference.Value.Start, reference.Value.Length);
-                    var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
-                    var errorTag = new ErrorTag(PredefinedErrorTypeNames.CompilerError, tooltip);
+                        var simpleSpan = new Span(item.Start, item.Length);
+                        var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
+                        var errorTag = new ErrorTag(PredefinedErrorTypeNames.CompilerError, tooltip);
 
-                    yield return new TagSpan<IErrorTag>(snapShotSpan, errorTag);
-                }
-            }
+                        yield return new TagSpan<IErrorTag>(snapShotSpan, errorTag);
+                    }
 
-            // Tokens
-            foreach (ParseItem item in _document.Items)
-            {
-                if (!item.IsValid)
-                {
-                    var tooltip = string.Join(Environment.NewLine, item.Errors);
+                    foreach (RestClient.Reference reference in item.References)
+                    {
+                        if (!reference.Value.IsValid)
+                        {
+                            var tooltip = string.Join(Environment.NewLine, reference.Value.Errors);
 
-                    var simpleSpan = new Span(item.Start, item.Length);
-                    var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
-                    var errorTag = new ErrorTag(PredefinedErrorTypeNames.CompilerError, tooltip);
+                            var simpleSpan = new Span(reference.Value.Start, reference.Value.Length);
+                            var snapShotSpan = new SnapshotSpan(snapshot, simpleSpan);
+                            var errorTag = new ErrorTag(PredefinedErrorTypeNames.CompilerError, tooltip);
 
-                    yield return new TagSpan<IErrorTag>(snapShotSpan, errorTag);
+                            yield return new TagSpan<IErrorTag>(snapShotSpan, errorTag);
+                        }
+                    }
                 }
             }
         }

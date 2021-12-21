@@ -43,7 +43,7 @@ namespace MarkdownEditor.Outlining
 
         public IEnumerable<ITagSpan<IStructureTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0 || !_structureTags.Any())
+            if (spans.Count == 0 || spans[0].IsEmpty || !_structureTags.Any())
             {
                 return null;
             }

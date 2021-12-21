@@ -45,8 +45,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BaseClasses\BraceCompletionBase.cs" />
-    <Compile Include="BaseClasses\CompletionCommitManagerBase.cs" />
+    <Compile Include="BaseClasses\ErrorList\ErrorListItem.cs" />
+    <Compile Include="BaseClasses\ErrorList\SinkManager.cs" />
+    <Compile Include="BaseClasses\ErrorList\TableDataSource.cs" />
+    <Compile Include="BaseClasses\ErrorList\TableEntriesSnapshot.cs" />
+    <Compile Include="BaseClasses\LanguageService\BraceCompletionBase.cs" />
+    <Compile Include="BaseClasses\LanguageService\CompletionCommitManagerBase.cs" />
+    <Compile Include="BaseClasses\LanguageService\DefaultAuthoringScope.cs" />
+    <Compile Include="BaseClasses\LanguageService\DefaultColorizer.cs" />
+    <Compile Include="BaseClasses\LanguageService\DefaultSource.cs" />
+    <Compile Include="BaseClasses\LanguageService\LanguageBase.cs" />
+    <Compile Include="Language\ErrorListManager.cs" />
     <Compile Include="Language\RestBraceCompletion.cs" />
     <Compile Include="Language\RestClassificationTagger.cs" />
     <Compile Include="Commands\GoToDefinitionCommand.cs" />
@@ -56,16 +65,11 @@
     <Compile Include="Language\RestCompletionCommitManager.cs" />
     <Compile Include="Language\RestCompletionSource.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="BaseClasses\LanguageBase.cs" />
-    <Compile Include="BaseClasses\DefaultAuthoringScope.cs" />
-    <Compile Include="BaseClasses\DefaultColorizer.cs" />
     <Compile Include="Language\RestIntratextAdornmentTagger.cs" />
     <Compile Include="Language\RestLanguage.cs" />
-    <Compile Include="BaseClasses\DefaultSource.cs" />
     <Compile Include="Language\RestErrorTagger.cs" />
     <Compile Include="Options\General.cs" />
     <Compile Include="Language\RestStructureTagger.cs" />
-    <Compile Include="BaseClasses\Attributes\ProvideBraceCompletionAttribute.cs" />
     <Compile Include="OutputWindow\ClassificationTypeDefinitions.cs" />
     <Compile Include="OutputWindow\OutputClassifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -116,7 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Community.VisualStudio.VSCT" Version="16.0.29.6" PrivateAssets="all" />
-    <PackageReference Include="Community.VisualStudio.Toolkit.17" Version="17.0.339" ExcludeAssets="Runtime">
+    <PackageReference Include="Community.VisualStudio.Toolkit.17" Version="17.0.355" ExcludeAssets="Runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5232" />

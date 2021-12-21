@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.Composition;
+using BaseClasses;
 using Microsoft.VisualStudio.Text.BraceCompletion;
 using Microsoft.VisualStudio.Utilities;
 
