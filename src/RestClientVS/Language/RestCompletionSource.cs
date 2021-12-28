@@ -73,10 +73,10 @@ namespace RestClientVS.Completion
 
             // Variable references
             ParseItem currentToken = document.Items.LastOrDefault(v => v.Contains(triggerLocation.Position));
-            RestClient.Reference currentReference = currentToken?.References.FirstOrDefault(v => v.Value.Contains(triggerLocation.Position));
+            ParseItem currentReference = currentToken?.References.FirstOrDefault(v => v.Contains(triggerLocation.Position));
             if (currentReference != null)
             {
-                return Task.FromResult(ConvertToCompletionItems(document.VariablesExpanded, _referenceIcon));
+                return Task.FromResult(GetReferenceCompletion(document.VariablesExpanded));
             }
 
             //// User is likely in the key portion of the pair
@@ -117,9 +117,6 @@ namespace RestClientVS.Completion
             return current;
         }
 
-        /// <summary>
-        /// Returns completion items applicable to the value portion of the key-value pair
-        /// </summary>
         private CompletionContext ConvertToCompletionItems(IDictionary<string, string> dic, ImageElement icon)
         {
             List<CompletionItem> items = new();
@@ -128,6 +125,19 @@ namespace RestClientVS.Completion
             {
                 var completion = new CompletionItem(key, this, icon);
                 completion.Properties.AddProperty("description", dic[key]?.Trim());
+                items.Add(completion);
+            }
+
+            return new CompletionContext(items.ToImmutableArray());
+        }
+
+        private CompletionContext GetReferenceCompletion(Dictionary<string, string> variables)
+        {
+            List<CompletionItem> items = new();
+            foreach (var key in variables.Keys)
+            {
+                var completion = new CompletionItem(key, this, _referenceIcon, ImmutableArray<CompletionFilter>.Empty, "", $"{{{{{key}}}}}", key, key, ImmutableArray<ImageElement>.Empty);
+                completion.Properties.AddProperty("description", variables[key]);
                 items.Add(completion);
             }
 
@@ -157,27 +167,25 @@ namespace RestClientVS.Completion
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }
 
-            // We participate in completion and provide the "applicable to span".
-            // This span is used:
-            // 1. To search (filter) the list of all completion items
-            // 2. To highlight (bold) the matching part of the completion items
-            // 3. In standard cases, it is replaced by content of completion item upon commit.
+            Document document = RestDocument.FromTextbuffer(triggerLocation.Snapshot.TextBuffer);
+            ParseItem item = document?.FindItemFromPosition(triggerLocation.Position);
 
-            // If you want to extend a language which already has completion, don't provide a span, e.g.
-            // return CompletionStartData.ParticipatesInCompletionIfAny
-
-            // If you provide a language, but don't have any items available at this location,
-            // consider providing a span for extenders who can't parse the codem e.g.
-            // return CompletionStartData(CompletionParticipation.DoesNotProvideItems, spanForOtherExtensions);
-
-            SnapshotSpan tokenSpan = FindTokenSpanAtPosition(triggerLocation);
-
-            if (triggerLocation.GetContainingLine().GetText().StartsWith(Constants.CommentChar.ToString(), StringComparison.Ordinal))
+            if (item?.Type == ItemType.Reference)
             {
-                return CompletionStartData.DoesNotParticipateInCompletion;
+                var tokenSpan = new SnapshotSpan(triggerLocation.Snapshot, item.ToSpan());
+                return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
             }
+            else
+            {
+                SnapshotSpan tokenSpan = FindTokenSpanAtPosition(triggerLocation);
 
-            return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
+                if (triggerLocation.GetContainingLine().GetText().StartsWith(Constants.CommentChar.ToString(), StringComparison.Ordinal))
+                {
+                    return CompletionStartData.DoesNotParticipateInCompletion;
+                }
+
+                return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
+            }
         }
 
         private SnapshotSpan FindTokenSpanAtPosition(SnapshotPoint triggerLocation)

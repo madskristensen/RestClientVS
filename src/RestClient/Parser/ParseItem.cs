@@ -5,7 +5,7 @@ namespace RestClient
 {
     public class ParseItem
     {
-        public List<string> _errors = new();
+        public HashSet<Error> _errors = new();
 
         public ParseItem(int start, string text, Document document, ItemType type)
         {
@@ -18,7 +18,7 @@ namespace RestClient
 
         public ItemType Type { get; }
 
-        public int Start { get; }
+        public virtual int Start { get; }
 
         public virtual string Text { get; protected set; }
         public virtual string TextExcludingLineBreaks { get; protected set; }
@@ -31,21 +31,15 @@ namespace RestClient
         public virtual int Length => End - Start;
         public virtual int LengthExcludingLineBreaks => EndExcludingLineBreaks - Start;
 
-        public List<Reference> References { get; } = new List<Reference>();
+        public List<ParseItem> References { get; } = new();
 
-        public IEnumerable<string> Errors => _errors;
+        public ICollection<Error> Errors => _errors;
 
         public bool IsValid => _errors.Count == 0;
 
         public virtual bool Contains(int position)
         {
             return Start <= position && End >= position;
-        }
-
-        public void AddError(string error)
-        {
-            Document.IsValid = false;
-            _errors.Add(error);
         }
 
         public ParseItem? Previous
@@ -85,5 +79,31 @@ namespace RestClient
         {
             return Type + " " + Text;
         }
+    }
+
+    public class Error
+    {
+        public Error(string errorCode, string message, ErrorCategory severity)
+        {
+            ErrorCode = errorCode;
+            Message = message;
+            Severity = severity;
+        }
+
+        public string ErrorCode { get; }
+        public string Message { get; }
+        public ErrorCategory Severity { get; }
+
+        public Error WithFormat(params string[] replacements)
+        {
+            return new Error(ErrorCode, string.Format(Message, replacements), Severity);
+        }
+    }
+
+    public enum ErrorCategory
+    {
+        Error,
+        Warning,
+        Message,
     }
 }

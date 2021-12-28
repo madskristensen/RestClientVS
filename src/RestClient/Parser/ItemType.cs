@@ -10,8 +10,8 @@
         HeaderName,
         HeaderValue,
         Body,
-        ReferenceBraces,
-        ReferenceName,
+        Reference,
         EmptyLine,
+        Request,
     }
 }

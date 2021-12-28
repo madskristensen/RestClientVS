@@ -11,10 +11,10 @@ namespace RestClient
         private static readonly Regex _regexUrl = new(@"^((?<method>get|post|put|delete|head|options|trace)\s*)(?<url>.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex _regexHeader = new(@"^(?<name>[^\s]+)?([\s]+)?(?<operator>:)(?<value>.+)", RegexOptions.Compiled);
         private static readonly Regex _regexVariable = new(@"^(?<name>@[^\s]+)\s*(?<equals>=)\s*(?<value>.+)", RegexOptions.Compiled);
-        private static readonly Regex _regexRef = new(@"(?<open>{{)(?<value>\$?[\w]+( [\w]+)?)?(?<close>}})", RegexOptions.Compiled);
+        private static readonly Regex _regexRef = new(@"{{[\w]+}}", RegexOptions.Compiled);
 
         public bool IsParsing { get; private set; }
-        public bool IsValid { get; set; }
+        public bool IsValid { get; private set; }
 
         public Task ParseAsync()
         {
@@ -83,8 +83,11 @@ namespace RestClient
             // Request url
             else if (IsMatch(_regexUrl, trimmedLine, out Match matchUrl))
             {
-                items.Add(ToParseItem(matchUrl, start, "method", ItemType.Method));
-                items.Add(ToParseItem(matchUrl, start, "url", ItemType.Url));
+                ParseItem? method = ToParseItem(matchUrl, start, "method", ItemType.Method);
+                ParseItem? url = ToParseItem(matchUrl, start, "url", ItemType.Url);
+                items.Add(new Request(this, method, url));
+                items.Add(method);
+                items.Add(url);
             }
             // Header
             else if (tokens.Count > 0 && IsMatch(_regexHeader, trimmedLine, out Match matchHeader))
@@ -157,12 +160,7 @@ namespace RestClient
         {
             foreach (Match match in _regexRef.Matches(token.Text))
             {
-                ParseItem? open = ToParseItem(match, token.Start, "open", ItemType.ReferenceBraces, false);
-                ParseItem? value = ToParseItem(match, token.Start, "value", ItemType.ReferenceName, false);
-                ParseItem? close = ToParseItem(match, token.Start, "close", ItemType.ReferenceBraces, false);
-
-                var reference = new Reference(open, value, close);
-
+                ParseItem? reference = ToParseItem(match.Value, token.Start + match.Index, ItemType.Reference, false);
                 token.References.Add(reference);
             }
         }
@@ -173,11 +171,12 @@ namespace RestClient
             foreach (ParseItem item in Items)
             {
                 // Variable references
-                foreach (Reference reference in item.References)
+                foreach (ParseItem? reference in item.References)
                 {
-                    if (VariablesExpanded != null && reference.Value != null && !VariablesExpanded.ContainsKey(reference.Value.Text))
+                    if (VariablesExpanded != null && !VariablesExpanded.ContainsKey(reference.Text.Trim('{', '}')))
                     {
-                        reference.Value.AddError($"The variable \"{reference.Value.Text}\" is not defined.");
+                        reference.Errors.Add(Errors.PL001.WithFormat(reference.Text.Trim('{', '}')));
+                        IsValid = false;
                     }
                 }
 
@@ -188,10 +187,17 @@ namespace RestClient
 
                     if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
                     {
-                        item.AddError($"\"{uri}\" is not a valid absolute URI");
+                        item.Errors.Add(Errors.PL002.WithFormat(uri));
+                        IsValid = false;
                     }
                 }
             }
+        }
+
+        private class Errors
+        {
+            public static Error PL001 { get; } = new("PL001", "The variable \"{0}\" is not defined.", ErrorCategory.Warning);
+            public static Error PL002 { get; } = new("PL002", "\"{0}\" is not a valid absolute URI", ErrorCategory.Warning);
         }
 
         private void OrganizeItems()
@@ -210,7 +216,7 @@ namespace RestClient
 
                 else if (item.Type == ItemType.Method)
                 {
-                    currentRequest = new Request(this, item, item.Next!);
+                    currentRequest = (Request)item.Previous!;
 
                     requests.Add(currentRequest);
                     currentRequest?.Children?.Add(currentRequest.Method);

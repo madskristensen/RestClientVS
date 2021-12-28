@@ -18,12 +18,14 @@ namespace RestClientTest
         {
             var doc = Document.FromLines(line);
             await doc.WaitForParsingCompleteAsync();
-            ParseItem first = doc.Items?.FirstOrDefault();
+            ParseItem request = doc.Items?.First();
+            ParseItem method = doc.Items?.ElementAt(1);
 
-            Assert.NotNull(first);
-            Assert.Equal(ItemType.Method, first.Type);
-            Assert.Equal(0, first.Start);
-            Assert.StartsWith(first.Text, line);
+            Assert.NotNull(method);
+            Assert.Equal(ItemType.Request, request.Type);
+            Assert.Equal(ItemType.Method, method.Type);
+            Assert.Equal(0, method.Start);
+            Assert.StartsWith(method.Text, line);
         }
 
         [Fact]
@@ -144,19 +146,6 @@ namespace RestClientTest
         }
 
         [Fact]
-
-        public async Task CommentAfterNewLineInRequest()
-        {
-            var text = new[] { "GET http://bing.com\r\n", "\r\n", "###" };
-
-            var doc = Document.FromLines(text);
-            await doc.WaitForParsingCompleteAsync();
-            ParseItem comment = doc.Items.ElementAt(3);
-
-            Assert.Equal(23, comment.Start);
-        }
-
-        [Fact]
         public async Task BodyAfterComment()
         {
             var text = new[] { @"TraCe https://{{host}}/authors/{{name}}\r\n",
@@ -208,7 +197,7 @@ namespace RestClientTest
             var doc = Document.FromLines(text);
             await doc.WaitForParsingCompleteAsync();
 
-            Assert.Equal(7, doc.Items.Count);
+            Assert.Equal(8, doc.Items.Count);
         }
     }
 }

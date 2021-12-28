@@ -22,9 +22,9 @@ namespace RestClientVS.Commands
             var position = args.TextView.Caret.Position.BufferPosition.Position;
 
             Document document = RestDocument.FromTextbuffer(args.TextView.TextBuffer);
-            ParseItem token = document.GetTokenFromPosition(position);
+            ParseItem token = document.FindItemFromPosition(position);
 
-            if (token?.Type == ItemType.ReferenceName)
+            if (token?.Type == ItemType.Reference)
             {
                 Variable definition = document.Variables.FirstOrDefault(v => v.Name.Text.Substring(1).Equals(token.Text, StringComparison.OrdinalIgnoreCase));
 

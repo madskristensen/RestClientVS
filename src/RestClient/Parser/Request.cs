@@ -4,11 +4,11 @@ using System.Text;
 
 namespace RestClient
 {
-    public class Request
+    public class Request : ParseItem
     {
         private readonly Document _document;
 
-        public Request(Document document, ParseItem method, ParseItem url)
+        public Request(Document document, ParseItem method, ParseItem url) : base(method.Start, method.Text, document, ItemType.Request)
         {
             _document = document;
             Method = method;
@@ -24,15 +24,8 @@ namespace RestClient
 
         public string? Body { get; set; }
 
-        public int Start => Method?.Start ?? 0;
-        public int End => Children.LastOrDefault()?.End ?? 0;
-
-        public int Length => End - Start;
-
-        public bool Contains(int position)
-        {
-            return position >= Start && position <= End;
-        }
+        public override int Start => Method?.Start ?? 0;
+        public override int End => Children.LastOrDefault()?.End ?? 0;
 
         public override string ToString()
         {
