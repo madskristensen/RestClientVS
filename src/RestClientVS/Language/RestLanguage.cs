@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using BaseClasses;
 using Microsoft.VisualStudio.Package;
 using Microsoft.VisualStudio.TextManager.Interop;
 
