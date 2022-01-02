@@ -104,8 +104,8 @@ namespace RestClientVS
                     ProjectName = _document.ProjectName ?? "",
                     FileName = _document.FileName,
                     Message = error.Message,
-                    ErrorCategory = PredefinedErrorTypeNames.SyntaxError,
-                    Severity = ConvertToVsCat(error.Severity),
+                    ErrorCategory = ConvertToVsCat(error.Severity),
+                    Severity = ConvertToVsSeverity(error.Severity),
                     Line = line.LineNumber,
                     Column = item.Start - line.Start.Position,
                     BuildTool = Vsix.Name,
@@ -114,7 +114,17 @@ namespace RestClientVS
             }
         }
 
-        private static __VSERRORCATEGORY ConvertToVsCat(ErrorCategory cat)
+        private static string ConvertToVsCat(ErrorCategory cat)
+        {
+            return cat switch
+            {
+                ErrorCategory.Message => PredefinedErrorTypeNames.Suggestion,
+                ErrorCategory.Warning => PredefinedErrorTypeNames.Warning,
+                _ => PredefinedErrorTypeNames.SyntaxError,
+            };
+        }
+
+        private static __VSERRORCATEGORY ConvertToVsSeverity(ErrorCategory cat)
         {
             return cat switch
             {
