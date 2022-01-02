@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace RestClient
 {
@@ -16,42 +15,45 @@ namespace RestClient
         public bool IsParsing { get; private set; }
         public bool IsValid { get; private set; }
 
-        public Task ParseAsync()
+        public void Parse()
         {
             IsParsing = true;
+            var isSuccess = false;
+            var start = 0;
 
-            return Task.Run(() =>
+            try
             {
-                var start = 0;
+                List<ParseItem> tokens = new();
 
-                try
+                foreach (var line in _lines)
                 {
-                    List<ParseItem> tokens = new();
+                    IEnumerable<ParseItem>? current = ParseLine(start, line, tokens);
 
-                    foreach (var line in _lines)
+                    if (current != null)
                     {
-                        IEnumerable<ParseItem>? current = ParseLine(start, line, tokens);
-
-                        if (current != null)
-                        {
-                            tokens.AddRange(current);
-                        }
-
-                        start += line.Length;
+                        tokens.AddRange(current);
                     }
 
-                    Items = tokens;
-
-                    OrganizeItems();
-                    ExpandVariables();
-                    ValidateDocument();
+                    start += line.Length;
                 }
-                finally
+
+                Items = tokens;
+
+                OrganizeItems();
+                ExpandVariables();
+                ValidateDocument();
+
+                isSuccess = true;
+            }
+            finally
+            {
+                IsParsing = false;
+
+                if (isSuccess)
                 {
-                    IsParsing = false;
                     Parsed?.Invoke(this, EventArgs.Empty);
                 }
-            });
+            }
         }
 
         private IEnumerable<ParseItem> ParseLine(int start, string line, List<ParseItem> tokens)

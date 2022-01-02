@@ -11,7 +11,7 @@ namespace RestClient
         protected Document(string[] lines)
         {
             _lines = lines;
-            _ = ParseAsync();
+            Parse();
         }
 
         public List<ParseItem> Items { get; private set; } = new List<ParseItem>();

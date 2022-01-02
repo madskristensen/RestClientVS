@@ -20,7 +20,7 @@ namespace RestClientVS
             if (docView != null)
             {
                 var position = docView.TextView.Caret.Position.BufferPosition.Position;
-                Document doc = RestDocument.FromTextbuffer(docView.TextBuffer);
+                Document doc = docView.TextBuffer.GetRestDocument();
                 Request request = doc.Requests.FirstOrDefault(r => r.Contains(position));
 
                 if (request != null)

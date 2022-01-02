@@ -44,7 +44,7 @@ namespace RestClientVS.Completion
         {
             ITextSnapshotLine line = triggerLocation.GetContainingLine();
 
-            Document document = RestDocument.FromTextbuffer(session.TextView.TextBuffer);
+            Document document = session.TextView.TextBuffer.GetRestDocument();
             SnapshotPoint lineStart = line.Start;
             ParseItem token = GetPreviousToken(document, lineStart, out var hasEmptyLine);
 
@@ -167,7 +167,7 @@ namespace RestClientVS.Completion
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }
 
-            Document document = RestDocument.FromTextbuffer(triggerLocation.Snapshot.TextBuffer);
+            Document document = triggerLocation.Snapshot.TextBuffer.GetRestDocument();
             ParseItem item = document?.FindItemFromPosition(triggerLocation.Position);
 
             if (item?.Type == ItemType.Reference)

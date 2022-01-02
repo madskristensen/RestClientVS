@@ -21,7 +21,7 @@ namespace RestClientVS.Commands
         {
             var position = args.TextView.Caret.Position.BufferPosition.Position;
 
-            Document document = RestDocument.FromTextbuffer(args.TextView.TextBuffer);
+            Document document = args.TextView.TextBuffer.GetRestDocument();
             ParseItem token = document.FindItemFromPosition(position);
 
             if (token?.Type == ItemType.Reference)

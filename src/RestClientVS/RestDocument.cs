@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Threading;
 using RestClient;
 
 namespace RestClientVS
@@ -20,13 +22,12 @@ namespace RestClientVS
 
             FileName = buffer.GetFileName();
 
-#pragma warning disable VSTHRD104 // Offer async methods
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await Task.Yield();
                 Project project = await VS.Solutions.GetActiveProjectAsync();
                 ProjectName = project?.Name;
-            });
-#pragma warning restore VSTHRD104 // Offer async methods
+            }).FireAndForget();
         }
 
         private void BufferChanged(object sender, TextContentChangedEventArgs e)
@@ -35,9 +36,10 @@ namespace RestClientVS
             ParseAsync().FireAndForget();
         }
 
-        public static RestDocument FromTextbuffer(ITextBuffer buffer)
+        private async Task ParseAsync()
         {
-            return buffer.Properties.GetOrCreateSingletonProperty(() => new RestDocument(buffer));
+            await TaskScheduler.Default;
+            Parse();
         }
 
         public void Dispose()

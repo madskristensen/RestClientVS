@@ -30,7 +30,7 @@ namespace RestClientVS.Language
         public RestIntratextAdornmentTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
-            _document = RestDocument.FromTextbuffer(buffer);
+            _document = buffer.GetRestDocument();
         }
 
         public IEnumerable<ITagSpan<IntraTextAdornmentTag>> GetTags(NormalizedSnapshotSpanCollection spans)
