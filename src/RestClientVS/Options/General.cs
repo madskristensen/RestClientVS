@@ -16,5 +16,11 @@ namespace RestClientVS
         [Description("The number of seconds to allow the request to run before failing.")]
         [DefaultValue(20)]
         public int Timeout { get; set; } = 20;
+
+        [Category("Response")]
+        [DisplayName("Response Window Width")]
+        [Description("The number of seconds to allow the request to run before failing.")]
+        [DefaultValue(500)]
+        public int ResponseWindowWidth { get; set; } = 500;
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Threading;
-using System.Windows.Forms;
 using RestClient;
 using RestClient.Client;
 
@@ -9,7 +8,6 @@ namespace RestClientVS
     [Command(PackageIds.SendRequest)]
     internal sealed class SendRequestCommand : BaseCommand<SendRequestCommand>
     {
-        private OutputWindowPane _pane;
         private static string _lastRequest;
         private static CancellationTokenSource _source;
 
@@ -29,17 +27,6 @@ namespace RestClientVS
                     _source?.Cancel();
                     _source = new CancellationTokenSource();
 
-                    if (_pane == null)
-                    {
-                        _pane = await VS.Windows.CreateOutputWindowPaneAsync(Vsix.Name, true);
-                    }
-
-                    await VS.Windows.ShowToolWindowAsync(new Guid(WindowGuids.OutputWindow));
-
-                    await _pane.ActivateAsync();
-                    await _pane.ClearAsync();
-                    await _pane.WriteLineAsync(Vsix.Name + " " + DateTime.Now.ToString() + " - " + request.Url.ExpandVariables() + Environment.NewLine);
-
                     await VS.StatusBar.ShowMessageAsync($"Sending request to {request.Url.ExpandVariables()}...");
                     await VS.StatusBar.StartAnimationAsync(StatusAnimation.Sync);
 
@@ -52,15 +39,9 @@ namespace RestClientVS
                         return;
                     }
 
-                    SendKeys.Send("{ESC}"); // puts focus back in the editor
-
-                    if (result.Response != null)
+                    if (docView.TextView.Properties.TryGetProperty(typeof(ResponseMargin), out ResponseMargin margin))
                     {
-                        await _pane.WriteLineAsync(await result.Response.ToRawStringAsync());
-                    }
-                    else
-                    {
-                        await _pane.WriteLineAsync(result.ErrorMessage);
+                        await margin.UpdateReponseAsync(result);
                     }
 
                     await VS.StatusBar.ShowMessageAsync("Request completed");

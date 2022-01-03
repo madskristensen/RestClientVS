@@ -53,6 +53,7 @@ namespace RestClient.Client
             var statusCode = (int)response.StatusCode;
             var line1 = $"HTTP/{response.Version} {statusCode} {response.ReasonPhrase}";
             sb.AppendLine(line1);
+            sb.AppendLine();
 
             foreach (KeyValuePair<string, IEnumerable<string>> keyValuePair in response.Headers)
             {
