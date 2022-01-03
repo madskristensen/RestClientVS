@@ -10,8 +10,8 @@
       "targetPath": "art/document.png"
     },
     {
-      "pathOnDisk": "art/output.png",
-      "targetPath": "art/output.png"
+      "pathOnDisk": "art/screenshot.png",
+      "targetPath": "art/screenshot.png"
     },
     {
       "pathOnDisk": "art/tooltip.png",

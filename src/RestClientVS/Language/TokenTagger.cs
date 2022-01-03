@@ -95,6 +95,11 @@ namespace RestClientVS
 
         private IEnumerable<ErrorListItem> CreateErrorListItem(ParseItem item)
         {
+            if (!General.Instance.EnableValidation)
+            {
+                yield break;
+            }
+
             ITextSnapshotLine line = _buffer.CurrentSnapshot.GetLineFromPosition(item.Start);
 
             foreach (Error error in item.Errors)

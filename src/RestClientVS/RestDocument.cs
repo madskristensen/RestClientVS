@@ -19,8 +19,9 @@ namespace RestClientVS
         {
             _buffer = buffer;
             _buffer.Changed += BufferChanged;
-
             FileName = buffer.GetFileName();
+
+            General.Saved += OnSettingsSaved;
 
             ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
@@ -42,11 +43,17 @@ namespace RestClientVS
             Parse();
         }
 
+        private void OnSettingsSaved(General obj)
+        {
+            ParseAsync().FireAndForget();
+        }
+
         public void Dispose()
         {
             if (!_isDisposed)
             {
                 _buffer.Changed -= BufferChanged;
+                General.Saved -= OnSettingsSaved;
             }
 
             _isDisposed = true;

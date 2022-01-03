@@ -7,6 +7,8 @@ or get the [CI build](https://www.vsixgallery.com/extension/RestClientVS.a7b4a36
 
 REST Client allows you to send HTTP request and view the response in Visual Studio directly. Based on the popular VS Code extension [Rest Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) by [Huachao Mao](https://github.com/Huachao)
 
+![Screenshot](art/screenshot.png)
+
 ## The .http file
 Any files with the extension `.http` is the entry point to creating HTTP requests.
 
@@ -40,11 +42,7 @@ This is what it looks like in the Blue Theme.
 
 ![Document](art/document.png)
 
-Notice the green play buttons showing up after each URL. Clicking those will fire off the request and display the raw response in the Output Widow.
-
-![Output](art/output.png)
-
-Peek at the value of the variables by moving the mouse over any line containing a variable reference.
+Notice the green play buttons showing up after each URL. Clicking those will fire off the request and display the raw response on the right side of the document.
 
 ![Tooltip](art/tooltip.png)
 
