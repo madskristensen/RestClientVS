@@ -11,9 +11,7 @@ namespace RestClientVS
         public const string FileExtension = ".http";
 
         public RestLanguage(object site) : base(site)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-        }
+        { }
 
         public override string Name => LanguageName;
 
