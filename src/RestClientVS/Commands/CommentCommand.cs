@@ -12,7 +12,7 @@ namespace RestClientVS.Commands
 {
     [Export(typeof(ICommandHandler))]
     [Name(nameof(CommentCommand))]
-    [ContentType(RestLanguage.LanguageName)]
+    [ContentType(LanguageFactory.LanguageName)]
     [TextViewRole(PredefinedTextViewRoles.PrimaryDocument)]
     public class CommentCommand : ICommandHandler<CommentSelectionCommandArgs>
     {

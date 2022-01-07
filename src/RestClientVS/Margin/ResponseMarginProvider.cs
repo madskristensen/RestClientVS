@@ -8,7 +8,7 @@ namespace RestClientVS
     [Name(nameof(ResponseMarginProvider))]
     [Order(After = PredefinedMarginNames.RightControl)]
     [MarginContainer(PredefinedMarginNames.Right)]
-    [ContentType(RestLanguage.LanguageName)]
+    [ContentType(LanguageFactory.LanguageName)]
     [TextViewRole(PredefinedTextViewRoles.Debuggable)] // This is to prevent the margin from loading in the diff view
     public class ResponseMarginProvider : IWpfTextViewMarginProvider
     {

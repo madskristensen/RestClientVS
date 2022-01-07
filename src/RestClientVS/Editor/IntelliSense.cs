@@ -18,24 +18,24 @@ using RestClient;
 namespace RestClientVS.Completion
 {
     [Export(typeof(IAsyncCompletionSourceProvider))]
-    [ContentType(RestLanguage.LanguageName)]
-    [Name(RestLanguage.LanguageName)]
+    [ContentType(LanguageFactory.LanguageName)]
+    [Name(LanguageFactory.LanguageName)]
     internal class RestCompletionSourceProvider : IAsyncCompletionSourceProvider
     {
         [Import] internal ITextStructureNavigatorSelectorService _structureNavigator = null;
 
         public IAsyncCompletionSource GetOrCreate(ITextView textView) =>
-            textView.Properties.GetOrCreateSingletonProperty(() => new RestCompletionSource(_structureNavigator));
+            textView.Properties.GetOrCreateSingletonProperty(() => new IntelliSense(_structureNavigator));
     }
 
-    public class RestCompletionSource : IAsyncCompletionSource
+    public class IntelliSense : IAsyncCompletionSource
     {
         private readonly ITextStructureNavigatorSelectorService _structureNavigator;
         private static readonly ImageElement _httpMethodIcon = new(KnownMonikers.HTTPConnection.ToImageId(), "HTTP method");
         private static readonly ImageElement _headerNameIcon = new(KnownMonikers.Metadata.ToImageId(), "HTTP header");
         private static readonly ImageElement _referenceIcon = new(KnownMonikers.LocalVariable.ToImageId(), "Variable");
 
-        public RestCompletionSource(ITextStructureNavigatorSelectorService structureNavigator)
+        public IntelliSense(ITextStructureNavigatorSelectorService structureNavigator)
         {
             _structureNavigator = structureNavigator;
         }
@@ -44,7 +44,7 @@ namespace RestClientVS.Completion
         {
             ITextSnapshotLine line = triggerLocation.GetContainingLine();
 
-            Document document = session.TextView.TextBuffer.GetRestDocument();
+            RestClient.Document document = session.TextView.TextBuffer.GetRestDocument();
             SnapshotPoint lineStart = line.Start;
             ParseItem token = GetPreviousToken(document, lineStart, out var hasEmptyLine);
 
@@ -53,7 +53,7 @@ namespace RestClientVS.Completion
                 // HTTP Method
                 if (token == null || token.Type == ItemType.VariableName || (token.Type == ItemType.Comment && token.Text.StartsWith("###")))
                 {
-                    return Task.FromResult(ConvertToCompletionItems(RestCompletionCatalog.HttpMethods, _httpMethodIcon));
+                    return Task.FromResult(ConvertToCompletionItems(IntelliSenseCatalog.HttpMethods, _httpMethodIcon));
                 }
 
                 // HTTP Headers
@@ -66,7 +66,7 @@ namespace RestClientVS.Completion
 
                     if (!colonExistsBeforeCaret)
                     {
-                        return Task.FromResult(ConvertToCompletionItems(RestCompletionCatalog.HttpHeaderNames, _headerNameIcon));
+                        return Task.FromResult(ConvertToCompletionItems(IntelliSenseCatalog.HttpHeaderNames, _headerNameIcon));
                     }
                 }
             }
@@ -94,7 +94,7 @@ namespace RestClientVS.Completion
             return Task.FromResult<CompletionContext>(null);
         }
 
-        private ParseItem GetPreviousToken(Document document, SnapshotPoint point, out bool hasEmptyLine)
+        private ParseItem GetPreviousToken(RestClient.Document document, SnapshotPoint point, out bool hasEmptyLine)
         {
             ParseItem current = null;
             hasEmptyLine = false;
@@ -167,7 +167,7 @@ namespace RestClientVS.Completion
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }
 
-            Document document = triggerLocation.Snapshot.TextBuffer.GetRestDocument();
+            RestClient.Document document = triggerLocation.Snapshot.TextBuffer.GetRestDocument();
             ParseItem item = document?.FindItemFromPosition(triggerLocation.Position);
 
             if (item?.Type == ItemType.Reference)

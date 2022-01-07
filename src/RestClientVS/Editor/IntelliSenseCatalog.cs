@@ -2,9 +2,9 @@
 
 namespace RestClientVS.Completion
 {
-    public class RestCompletionCatalog
+    public class IntelliSenseCatalog
     {
-        public static IDictionary<string, string> HttpMethods = new Dictionary<string, string>()
+        public static readonly IDictionary<string, string> HttpMethods = new Dictionary<string, string>()
         {
             {"GET",     "The GET method is used to retrieve information from the given server using a given URI.Requests using GET should only retrieve data and should have no other effect on the data."},
             {"HEAD",    "Same as GET, but transfers the status line and header section only."},
@@ -15,7 +15,7 @@ namespace RestClientVS.Completion
             {"OPTIONS",  "Describes the communication options for the target resource."},
         };
 
-        public static IDictionary<string, string> HttpHeaderNames = new Dictionary<string, string>()
+        public static readonly IDictionary<string, string> HttpHeaderNames = new Dictionary<string, string>()
         {
             {"A-IM","Acceptable instance-manipulations for the request."},
             {"Accept","Media type(s) that is/are acceptable for the response. See Content negotiation."},

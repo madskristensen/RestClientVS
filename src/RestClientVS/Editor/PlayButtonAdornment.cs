@@ -14,20 +14,20 @@ using RestClient;
 namespace RestClientVS.Language
 {
     [Export(typeof(IViewTaggerProvider))]
-    [ContentType(RestLanguage.LanguageName)]
+    [ContentType(LanguageFactory.LanguageName)]
     [TagType(typeof(IntraTextAdornmentTag))]
     internal sealed class RestIntratextAdornmentTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag =>
-            buffer.Properties.GetOrCreateSingletonProperty(() => new RestIntratextAdornmentTagger(buffer)) as ITagger<T>;
+            buffer.Properties.GetOrCreateSingletonProperty(() => new PlayButtonAdornment(buffer)) as ITagger<T>;
     }
 
-    internal class RestIntratextAdornmentTagger : ITagger<IntraTextAdornmentTag>
+    internal class PlayButtonAdornment : ITagger<IntraTextAdornmentTag>
     {
         private readonly ITextBuffer _buffer;
         private readonly RestDocument _document;
 
-        public RestIntratextAdornmentTagger(ITextBuffer buffer)
+        public PlayButtonAdornment(ITextBuffer buffer)
         {
             _buffer = buffer;
             _document = buffer.GetRestDocument();

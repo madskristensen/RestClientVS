@@ -14,19 +14,19 @@ namespace RestClientVS
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(PackageGuids.RestClientVSString)]
 
-    [ProvideLanguageService(typeof(RestLanguage), RestLanguage.LanguageName, 0)]
-    [ProvideLanguageExtension(typeof(RestLanguage), RestLanguage.FileExtension)]
-    [ProvideFileIcon(RestLanguage.FileExtension, "KnownMonikers.WebScript")]
+    [ProvideLanguageService(typeof(LanguageFactory), LanguageFactory.LanguageName, 0)]
+    [ProvideLanguageExtension(typeof(LanguageFactory), LanguageFactory.FileExtension)]
+    [ProvideFileIcon(LanguageFactory.FileExtension, "KnownMonikers.WebScript")]
 
-    [ProvideLanguageEditorOptionPage(typeof(OptionsProvider.GeneralOptions), RestLanguage.LanguageName, null, "Advanced", null, new[] { "http", "rest", "timeout" })]
+    [ProvideLanguageEditorOptionPage(typeof(OptionsProvider.GeneralOptions), LanguageFactory.LanguageName, null, "Advanced", null, new[] { "http", "rest", "timeout" })]
 
-    [ProvideEditorFactory(typeof(RestLanguage), 0, false, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
-    [ProvideEditorLogicalView(typeof(RestLanguage), VSConstants.LOGVIEWID.TextView_string, IsTrusted = true)]
+    [ProvideEditorFactory(typeof(LanguageFactory), 0, false, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
+    [ProvideEditorLogicalView(typeof(LanguageFactory), VSConstants.LOGVIEWID.TextView_string, IsTrusted = true)]
     public sealed class RestClientVSPackage : ToolkitPackage
     {
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            RegisterEditorFactory(new RestLanguage(this));
+            RegisterEditorFactory(new LanguageFactory(this));
 
             await this.RegisterCommandsAsync();
         }

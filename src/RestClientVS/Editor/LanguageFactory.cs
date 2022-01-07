@@ -5,12 +5,12 @@ using Microsoft.VisualStudio.TextManager.Interop;
 namespace RestClientVS
 {
     [Guid(PackageGuids.RestEditorFactoryString)]
-    public class RestLanguage : LanguageBase
+    public class LanguageFactory : LanguageBase
     {
         public const string LanguageName = "Rest";
         public const string FileExtension = ".http";
 
-        public RestLanguage(object site) : base(site)
+        public LanguageFactory(object site) : base(site)
         { }
 
         public override string Name => LanguageName;

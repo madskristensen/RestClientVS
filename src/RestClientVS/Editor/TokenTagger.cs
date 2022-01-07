@@ -16,8 +16,8 @@ namespace RestClientVS
 {
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(TokenTag))]
-    [ContentType(RestLanguage.LanguageName)]
-    [Name(RestLanguage.LanguageName)]
+    [ContentType(LanguageFactory.LanguageName)]
+    [Name(LanguageFactory.LanguageName)]
     internal sealed class TokenTaggerProvider : ITaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag =>

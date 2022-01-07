@@ -45,16 +45,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Language\EditorFeatures.cs" />
+    <Compile Include="Editor\EditorFeatures.cs" />
     <Compile Include="Commands\GoToDefinitionCommand.cs" />
     <Compile Include="Commands\UncommentCommand.cs" />
     <Compile Include="Commands\CommentCommand.cs" />
-    <Compile Include="Language\RestCompletionCatalog.cs" />
-    <Compile Include="Language\RestCompletionSource.cs" />
+    <Compile Include="Editor\IntelliSenseCatalog.cs" />
+    <Compile Include="Editor\IntelliSense.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Language\RestIntratextAdornmentTagger.cs" />
-    <Compile Include="Language\RestLanguage.cs" />
-    <Compile Include="Language\TokenTagger.cs" />
+    <Compile Include="Editor\PlayButtonAdornment.cs" />
+    <Compile Include="Editor\LanguageFactory.cs" />
+    <Compile Include="Editor\TokenTagger.cs" />
     <Compile Include="Margin\ResponseControl.xaml.cs">
       <DependentUpon>ResponseControl.xaml</DependentUpon>
     </Compile>

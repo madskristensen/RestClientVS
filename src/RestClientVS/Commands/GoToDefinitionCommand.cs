@@ -11,7 +11,7 @@ namespace RestClientVS.Commands
 {
     [Export(typeof(ICommandHandler))]
     [Name(nameof(CommentCommand))]
-    [ContentType(RestLanguage.LanguageName)]
+    [ContentType(LanguageFactory.LanguageName)]
     [TextViewRole(PredefinedTextViewRoles.PrimaryDocument)]
     public class GoToDefinitionCommand : ICommandHandler<GoToDefinitionCommandArgs>
     {
@@ -21,7 +21,7 @@ namespace RestClientVS.Commands
         {
             var position = args.TextView.Caret.Position.BufferPosition.Position;
 
-            Document document = args.TextView.TextBuffer.GetRestDocument();
+            RestClient.Document document = args.TextView.TextBuffer.GetRestDocument();
             ParseItem token = document.FindItemFromPosition(position);
 
             if (token?.Type == ItemType.Reference)
