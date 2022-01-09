@@ -16,13 +16,13 @@ namespace RestClientVS
 
     [ProvideLanguageService(typeof(LanguageFactory), LanguageFactory.LanguageName, 0)]
     [ProvideLanguageExtension(typeof(LanguageFactory), LanguageFactory.FileExtension)]
-    [ProvideFileIcon(LanguageFactory.FileExtension, "KnownMonikers.WebScript")]
-
     [ProvideLanguageEditorOptionPage(typeof(OptionsProvider.GeneralOptions), LanguageFactory.LanguageName, null, "Advanced", null, new[] { "http", "rest", "timeout" })]
 
-    [ProvideEditorFactory(typeof(LanguageFactory), 0, false, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
+    [ProvideEditorFactory(typeof(LanguageFactory), 351, false, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
+    [ProvideEditorExtension(typeof(LanguageFactory), LanguageFactory.FileExtension, 65535, NameResourceID = 351)]
     [ProvideEditorLogicalView(typeof(LanguageFactory), VSConstants.LOGVIEWID.TextView_string, IsTrusted = true)]
-    [ProvideEditorExtension(typeof(LanguageFactory), LanguageFactory.FileExtension, 0x32)]
+
+    [ProvideFileIcon(LanguageFactory.FileExtension, "KnownMonikers.WebScript")]
     public sealed class RestClientVSPackage : ToolkitPackage
     {
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
