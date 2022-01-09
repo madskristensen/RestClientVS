@@ -8,7 +8,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Tagging;
-using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using RestClient;
 
@@ -24,46 +23,36 @@ namespace RestClientVS
             buffer.Properties.GetOrCreateSingletonProperty(() => new TokenTagger(buffer)) as ITagger<T>;
     }
 
-    internal class TokenTagger : ITagger<TokenTag>, IDisposable
+    internal class TokenTagger : TokenTaggerBase, IDisposable
     {
         private readonly RestDocument _document;
-        private readonly ITextBuffer _buffer;
-        private Dictionary<ParseItem, ITagSpan<TokenTag>> _tagsCache;
         private static readonly ImageId _errorIcon = KnownMonikers.StatusWarningNoColor.ToImageId();
         private bool _isDisposed;
 
-        internal TokenTagger(ITextBuffer buffer)
+        internal TokenTagger(ITextBuffer buffer) : base(buffer)
         {
-            _buffer = buffer;
             _document = buffer.GetRestDocument();
-            _document.Parsed += ReParse;
-            _tagsCache = new Dictionary<ParseItem, ITagSpan<TokenTag>>();
-
-            ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await TaskScheduler.Default;
-                ReParse();
-            }).FireAndForget();
+            _document.Parsed += OnDocumentParsed;
         }
 
-        public IEnumerable<ITagSpan<TokenTag>> GetTags(NormalizedSnapshotSpanCollection spans)
+        private void OnDocumentParsed(object sender = null, EventArgs e = null)
         {
-            return _tagsCache.Values;
+            _ = TokenizeAsync();
         }
 
-        private void ReParse(object sender = null, EventArgs e = null)
+        public override Task TokenizeAsync()
         {
             // Make sure this is running on a background thread.
             ThreadHelper.ThrowIfOnUIThread();
 
-            Dictionary<ParseItem, ITagSpan<TokenTag>> list = new();
+            List<ITagSpan<TokenTag>> list = new();
 
             foreach (ParseItem item in _document.Items)
             {
                 if (_document.IsParsing)
                 {
                     // Abort and wait for the next parse event to finish
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 AddTagToList(list, item);
@@ -74,23 +63,19 @@ namespace RestClientVS
                 }
             }
 
-            _tagsCache = list;
-
-            SnapshotSpan span = new(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length);
-            TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(span));
+            OnTagsUpdated(list);
+            return Task.CompletedTask;
         }
 
-        private void AddTagToList(Dictionary<ParseItem, ITagSpan<TokenTag>> list, ParseItem item)
+        private void AddTagToList(List<ITagSpan<TokenTag>> list, ParseItem item)
         {
-            var span = new SnapshotSpan(_buffer.CurrentSnapshot, item.ToSpan());
+            var supportsOutlining = item is Request request && (request.Headers.Any() || request.Body != null);
+            var hasTooltip = !item.IsValid;
+            IEnumerable<ErrorListItem> errors = CreateErrorListItem(item);
+            TokenTag tag = CreateToken(item.Type, hasTooltip, supportsOutlining, errors);
 
-            var tag = new TokenTag(
-                tokenType: item.Type,
-                supportOutlining: item is Request request && (request.Headers.Any() || request.Body != null),
-                getTooltipAsync: item.IsValid ? null : GetTooltipAsync,
-                errors: CreateErrorListItem(item).ToArray());
-
-            list.Add(item, new TagSpan<TokenTag>(span, tag));
+            var span = new SnapshotSpan(Buffer.CurrentSnapshot, item.ToSpan());
+            list.Add(new TagSpan<TokenTag>(span, tag));
         }
 
         private IEnumerable<ErrorListItem> CreateErrorListItem(ParseItem item)
@@ -100,7 +85,7 @@ namespace RestClientVS
                 yield break;
             }
 
-            ITextSnapshotLine line = _buffer.CurrentSnapshot.GetLineFromPosition(item.Start);
+            ITextSnapshotLine line = Buffer.CurrentSnapshot.GetLineFromPosition(item.Start);
 
             foreach (Error error in item.Errors)
             {
@@ -139,7 +124,7 @@ namespace RestClientVS
             };
         }
 
-        private Task<object> GetTooltipAsync(SnapshotPoint triggerPoint)
+        public override Task<object> GetTooltipAsync(SnapshotPoint triggerPoint)
         {
             ParseItem item = _document.FindItemFromPosition(triggerPoint.Position);
 
@@ -161,13 +146,11 @@ namespace RestClientVS
         {
             if (!_isDisposed)
             {
-                _document.Parsed -= ReParse;
+                _document.Parsed -= OnDocumentParsed;
                 _document.Dispose();
             }
 
             _isDisposed = true;
         }
-
-        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
     }
 }
