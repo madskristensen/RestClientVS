@@ -21,12 +21,13 @@ namespace RestClientVS.Commands
         {
             var position = args.TextView.Caret.Position.BufferPosition.Position;
 
-            RestClient.Document document = args.TextView.TextBuffer.GetRestDocument();
+            Document document = args.TextView.TextBuffer.GetRestDocument();
             ParseItem token = document.FindItemFromPosition(position);
 
             if (token?.Type == ItemType.Reference)
             {
-                Variable definition = document.Variables.FirstOrDefault(v => v.Name.Text.Substring(1).Equals(token.Text, StringComparison.OrdinalIgnoreCase));
+                var varName = token.Text.Trim('{', '}');
+                Variable definition = document.Variables.FirstOrDefault(v => v.Name.Text.Substring(1).Equals(varName, StringComparison.OrdinalIgnoreCase));
 
                 if (definition != null)
                 {

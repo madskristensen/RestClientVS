@@ -18,7 +18,7 @@ namespace RestClientVS
     [ProvideLanguageExtension(typeof(LanguageFactory), LanguageFactory.FileExtension)]
     [ProvideLanguageEditorOptionPage(typeof(OptionsProvider.GeneralOptions), LanguageFactory.LanguageName, null, "Advanced", null, new[] { "http", "rest", "timeout" })]
 
-    [ProvideEditorFactory(typeof(LanguageFactory), 351, false, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
+    [ProvideEditorFactory(typeof(LanguageFactory), 351, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
     [ProvideEditorExtension(typeof(LanguageFactory), LanguageFactory.FileExtension, 65535, NameResourceID = 351)]
     [ProvideEditorLogicalView(typeof(LanguageFactory), VSConstants.LOGVIEWID.TextView_string, IsTrusted = true)]
 
@@ -27,9 +27,14 @@ namespace RestClientVS
     {
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            RegisterEditorFactory(new LanguageFactory(this));
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var language = new LanguageFactory(this);
+            RegisterEditorFactory(language);
+            language.RegisterLanguageService(this);
 
             await this.RegisterCommandsAsync();
+            await Commenting.InitializeAsync();
         }
     }
 }
