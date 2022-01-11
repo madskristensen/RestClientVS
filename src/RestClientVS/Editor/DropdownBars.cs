@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Linq;
-using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Package;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
@@ -20,16 +19,23 @@ namespace RestClientVS
             : base(languageService)
         {
             _languageService = languageService;
-
-            IVsEditorAdaptersFactoryService adapter = VS.GetMefService<IVsEditorAdaptersFactoryService>();
-
-            _textView = adapter.GetWpfTextView(textView);
-            _textView.Caret.PositionChanged += CaretPositionChanged;
-
+            _textView = textView.ToIWpfTextView();
             _document = _textView.TextBuffer.GetRestDocument();
             _document.Parsed += OnDocumentParsed;
 
-            SynchronizeDropdowns();
+            InitializeAsync(textView).FireAndForget();
+        }
+
+        // This moves the caret to trigger initial drop down load
+        private Task InitializeAsync(IVsTextView textView)
+        {
+            return ThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
+            {
+                textView.SendExplicitFocus();
+                _textView.Caret.MoveToNextCaretPosition();
+                _textView.Caret.PositionChanged += CaretPositionChanged;
+                _textView.Caret.MoveToPreviousCaretPosition();
+            }).Task;
         }
 
         private void OnDocumentParsed(object sender, EventArgs e)
@@ -42,18 +48,20 @@ namespace RestClientVS
 
         private void SynchronizeDropdowns()
         {
-            if (_document.IsParsing)
+            if (!_document.IsParsing)
             {
+                _languageService.SynchronizeDropdowns();
+
                 return;
             }
 
-            _ = ThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
-            {
-                if (!_document.IsParsing)
-                {
-                    _languageService.SynchronizeDropdowns();
-                }
-            }, VsTaskRunContext.UIThreadIdlePriority);
+            //_ = ThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
+            //{
+            //    if (!_document.IsParsing)
+            //    {
+            //        _languageService.SynchronizeDropdowns();
+            //    }
+            //}, VsTaskRunContext.UIThreadBackgroundPriority);
         }
 
         public override bool OnSynchronizeDropdowns(LanguageService languageService, IVsTextView textView, int line, int col, ArrayList dropDownTypes, ArrayList dropDownMembers, ref int selectedType, ref int selectedMember)
