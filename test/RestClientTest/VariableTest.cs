@@ -50,5 +50,16 @@ namespace RestClientTest
 
             Assert.Equal("GET https://bing.com", r.ToString());
         }
+
+        [Fact]
+        public void HeaderValueContainsVariable()
+        {
+            var text = new[] { "get http://ost.com\r\n",
+                       "name:{{hostname}}\r\n" };
+
+            var doc = Document.FromLines(text);
+
+            Assert.True(doc.Requests.First().Headers.First().Value.References.Any());
+        }
     }
 }

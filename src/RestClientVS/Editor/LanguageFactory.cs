@@ -40,7 +40,7 @@ namespace RestClientVS
             preferences.InsertTabs = false;
             preferences.IndentSize = 2;
             preferences.IndentStyle = IndentingStyle.Smart;
-            preferences.ShowNavigationBar = false;
+            preferences.ShowNavigationBar = true;
 
             preferences.WordWrap = false;
             preferences.WordWrapGlyphs = true;

@@ -12,6 +12,7 @@ namespace RestClientTest
         [InlineData(@"post https://example.com?hat&ost")]
         [InlineData(@"options https://example.com")]
         [InlineData(@"Trace https://example.com?hat&ost")]
+        [InlineData(@"Trace https://example.com?hat&ost HTTP/1.1")]
         public void OneLiners(string line)
         {
             var doc = Document.FromLines(line);
@@ -36,6 +37,19 @@ namespace RestClientTest
 
             Assert.Equal("GET", request.Method.Text);
             Assert.Equal(3, request.Method.Start);
+        }
+
+        [Fact]
+        public void RequestWithVersion()
+        {
+            var lines = new[] { "\r", Environment.NewLine, @"GET https://example.com http/1.1" };
+
+            var doc = Document.FromLines(lines);
+
+            Request request = doc.Requests?.FirstOrDefault();
+
+            Assert.NotNull(request.Version);
+            Assert.Equal("http/1.1", request.Version.Text);
         }
 
         [Fact]

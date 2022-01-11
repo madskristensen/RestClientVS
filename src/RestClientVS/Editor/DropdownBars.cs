@@ -51,17 +51,7 @@ namespace RestClientVS
             if (!_document.IsParsing)
             {
                 _languageService.SynchronizeDropdowns();
-
-                return;
             }
-
-            //_ = ThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
-            //{
-            //    if (!_document.IsParsing)
-            //    {
-            //        _languageService.SynchronizeDropdowns();
-            //    }
-            //}, VsTaskRunContext.UIThreadBackgroundPriority);
         }
 
         public override bool OnSynchronizeDropdowns(LanguageService languageService, IVsTextView textView, int line, int col, ArrayList dropDownTypes, ArrayList dropDownMembers, ref int selectedType, ref int selectedMember)
@@ -97,7 +87,7 @@ namespace RestClientVS
         private static DropDownMember CreateDropDownMember(Request request, IVsTextView textView)
         {
             TextSpan textSpan = GetTextSpan(request, textView);
-            var text = request.Method.Text + " " + request.Url.Text;
+            var text = request.Method.Text + " " + request.Url.Text + " " + request.Version?.Text;
             return new DropDownMember(text, textSpan, 126, DROPDOWNFONTATTR.FONTATTR_PLAIN);
         }
 

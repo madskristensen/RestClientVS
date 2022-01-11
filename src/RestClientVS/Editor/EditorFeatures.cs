@@ -21,6 +21,7 @@ namespace RestClientVS
             { ItemType.VariableValue, PredefinedClassificationTypeNames.Text },
             { ItemType.Method, PredefinedClassificationTypeNames.MarkupNode },
             { ItemType.Url, PredefinedClassificationTypeNames.Text },
+            { ItemType.Version, PredefinedClassificationTypeNames.Type },
             { ItemType.HeaderName, PredefinedClassificationTypeNames.Identifier },
             { ItemType.HeaderValue, PredefinedClassificationTypeNames.Literal },
             { ItemType.Comment, PredefinedClassificationTypeNames.Comment },

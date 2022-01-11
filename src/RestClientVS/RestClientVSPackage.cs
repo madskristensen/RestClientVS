@@ -14,7 +14,7 @@ namespace RestClientVS
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(PackageGuids.RestClientVSString)]
 
-    [ProvideLanguageService(typeof(LanguageFactory), LanguageFactory.LanguageName, 0)]
+    [ProvideLanguageService(typeof(LanguageFactory), LanguageFactory.LanguageName, 0, ShowHotURLs = false, DefaultToNonHotURLs = true)]
     [ProvideLanguageExtension(typeof(LanguageFactory), LanguageFactory.FileExtension)]
     [ProvideLanguageEditorOptionPage(typeof(OptionsProvider.GeneralOptions), LanguageFactory.LanguageName, null, "Advanced", null, new[] { "http", "rest", "timeout" })]
 

@@ -7,7 +7,7 @@ namespace RestClient
 {
     public partial class Document
     {
-        private static readonly Regex _regexUrl = new(@"^((?<method>get|post|put|delete|head|options|trace)\s*)(?<url>.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regexUrl = new(@"^((?<method>get|post|put|delete|head|options|trace))\s*(?<url>[^\s]+)\s*(?<version>HTTP/.*)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex _regexHeader = new(@"^(?<name>[^\s]+)?([\s]+)?(?<operator>:)(?<value>.+)", RegexOptions.Compiled);
         private static readonly Regex _regexVariable = new(@"^(?<name>@[^\s]+)\s*(?<equals>=)\s*(?<value>.+)", RegexOptions.Compiled);
         private static readonly Regex _regexRef = new(@"{{[\w]+}}", RegexOptions.Compiled);
@@ -79,26 +79,32 @@ namespace RestClient
             // Variable declaration
             else if (IsMatch(_regexVariable, trimmedLine, out Match matchVar))
             {
-                items.Add(ToParseItem(matchVar, start, "name", ItemType.VariableName, false));
-                items.Add(ToParseItem(matchVar, start, "value", ItemType.VariableValue, true));
+                items.Add(ToParseItem(matchVar, start, "name", ItemType.VariableName, false)!);
+                items.Add(ToParseItem(matchVar, start, "value", ItemType.VariableValue, true)!);
             }
-            // Request url
+            // Request URL
             else if (IsMatch(_regexUrl, trimmedLine, out Match matchUrl))
             {
-                ParseItem? method = ToParseItem(matchUrl, start, "method", ItemType.Method);
-                ParseItem? url = ToParseItem(matchUrl, start, "url", ItemType.Url);
-                items.Add(new Request(this, method, url));
+                ParseItem method = ToParseItem(matchUrl, start, "method", ItemType.Method)!;
+                ParseItem url = ToParseItem(matchUrl, start, "url", ItemType.Url)!;
+                ParseItem? version = ToParseItem(matchUrl, start, "version", ItemType.Version);
+                items.Add(new Request(this, method, url, version));
                 items.Add(method);
                 items.Add(url);
+
+                if (version != null)
+                {
+                    items.Add(version);
+                }
             }
             // Header
             else if (tokens.Count > 0 && IsMatch(_regexHeader, trimmedLine, out Match matchHeader))
             {
                 ParseItem? prev = tokens.Last();
-                if (prev?.Type == ItemType.HeaderValue || prev?.Type == ItemType.Url || prev?.Type == ItemType.Comment)
+                if (prev?.Type == ItemType.HeaderValue || prev?.Type == ItemType.Url || prev?.Type == ItemType.Version || prev?.Type == ItemType.Comment)
                 {
-                    items.Add(ToParseItem(matchHeader, start, "name", ItemType.HeaderName));
-                    items.Add(ToParseItem(matchHeader, start, "value", ItemType.HeaderValue));
+                    items.Add(ToParseItem(matchHeader, start, "name", ItemType.HeaderName)!);
+                    items.Add(ToParseItem(matchHeader, start, "value", ItemType.HeaderValue)!);
                 }
             }
 
@@ -126,7 +132,7 @@ namespace RestClient
 
             ParseItem? parent = tokens.ElementAtOrDefault(Math.Max(0, tokens.Count - 2));
 
-            if (parent?.Type == ItemType.HeaderValue || parent?.Type == ItemType.Url || (parent?.Type == ItemType.Comment && parent?.TextExcludingLineBreaks != "###"))
+            if (parent?.Type == ItemType.HeaderValue || parent?.Type == ItemType.Url || parent?.Type == ItemType.Version || (parent?.Type == ItemType.Comment && parent?.TextExcludingLineBreaks != "###"))
             {
                 return true;
             }
@@ -152,9 +158,15 @@ namespace RestClient
             return item;
         }
 
-        private ParseItem ToParseItem(Match match, int start, string groupName, ItemType type, bool supportsVariableReferences = true)
+        private ParseItem? ToParseItem(Match match, int start, string groupName, ItemType type, bool supportsVariableReferences = true)
         {
             Group? group = match.Groups[groupName];
+
+            if (string.IsNullOrEmpty(group.Value))
+            {
+                return null;
+            }
+
             return ToParseItem(group.Value, start + group.Index, type, supportsVariableReferences);
         }
 
@@ -223,6 +235,11 @@ namespace RestClient
                     requests.Add(currentRequest);
                     currentRequest?.Children?.Add(currentRequest.Method);
                     currentRequest?.Children?.Add(currentRequest.Url);
+
+                    if (currentRequest?.Version != null)
+                    {
+                        currentRequest?.Children?.Add(currentRequest.Version);
+                    }
                 }
 
                 else if (currentRequest != null)

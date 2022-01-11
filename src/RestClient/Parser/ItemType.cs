@@ -7,6 +7,7 @@
         Comment,
         Method,
         Url,
+        Version,
         HeaderName,
         HeaderValue,
         Body,
