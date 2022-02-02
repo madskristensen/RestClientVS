@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -26,9 +27,24 @@ namespace RestClient
         public List<Header>? Headers { get; } = new();
 
         public string? Body { get; set; }
-
         public override int Start => Method?.Start ?? 0;
         public override int End => Children.LastOrDefault()?.End ?? 0;
+        public bool IsActive { get; set; }
+        public bool LastRunWasSuccess { get; set; } = true;
+        private Action _completionAction { get; set; }
+
+        public void StartActive(Action OnCompletion)
+        {
+            _completionAction = OnCompletion;
+            IsActive = true;
+            LastRunWasSuccess = true;
+        }
+        public void EndActive(bool IsSuccessStatus)
+        {
+            IsActive = false;
+            LastRunWasSuccess = IsSuccessStatus;
+            _completionAction?.Invoke();
+        }
 
         public override string ToString()
         {

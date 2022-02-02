@@ -30,7 +30,7 @@ namespace RestClientVS
                     await VS.StatusBar.ShowMessageAsync($"Sending request to {request.Url.ExpandVariables()}...");
                     await VS.StatusBar.StartAnimationAsync(StatusAnimation.Sync);
 
-                    General options = await General.GetLiveInstanceAsync();
+                    General options = await General.GetLiveInstanceAsync();                                        
                     RequestResult result = await RequestSender.SendAsync(request, TimeSpan.FromSeconds(options.Timeout), _source.Token);
 
                     if (!string.IsNullOrEmpty(_lastRequest) && result.RequestToken.ToString() != _lastRequest)
@@ -43,7 +43,8 @@ namespace RestClientVS
                     {
                         await margin.UpdateReponseAsync(result);
                     }
-
+                    
+                    request.EndActive(result.Response?.IsSuccessStatusCode ?? false);
                     await VS.StatusBar.ShowMessageAsync("Request completed");
                     await VS.StatusBar.EndAnimationAsync(StatusAnimation.Sync);
                 }
