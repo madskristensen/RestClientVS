@@ -19,17 +19,19 @@ namespace RestClientVS.Language
     internal sealed class RestIntratextAdornmentTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag =>
-            buffer.Properties.GetOrCreateSingletonProperty(() => new PlayButtonAdornment(buffer)) as ITagger<T>;
+            buffer.Properties.GetOrCreateSingletonProperty(() => new PlayButtonAdornment(buffer,textView)) as ITagger<T>;
     }
 
     internal class PlayButtonAdornment : ITagger<IntraTextAdornmentTag>
     {
         private readonly ITextBuffer _buffer;
+        private readonly ITextView _view;
         private readonly RestDocument _document;
 
-        public PlayButtonAdornment(ITextBuffer buffer)
+        public PlayButtonAdornment(ITextBuffer buffer, ITextView view)
         {
             _buffer = buffer;
+            _view = view;
             _document = buffer.GetRestDocument();
         }
 
@@ -44,7 +46,7 @@ namespace RestClientVS.Language
             {
                 if (_buffer.CurrentSnapshot.Length >= request.Start)
                 {
-                    IntraTextAdornmentTag tag = new(CreateUiControl(), null, PositionAffinity.Successor);
+                    IntraTextAdornmentTag tag = new(CreateUiControl(request), null, PositionAffinity.Successor);
                     ITextSnapshotLine line = _buffer.CurrentSnapshot.GetLineFromPosition(request.Start);
                     SnapshotSpan span = new(line.Snapshot, line.End, 0);
 
@@ -53,13 +55,13 @@ namespace RestClientVS.Language
             }
         }
 
-        private FrameworkElement CreateUiControl()
+        private FrameworkElement CreateUiControl(Request request)
         {
             FrameworkElement element = new Label
             {
-                Content = "▶️",
+                Content = request.IsActive ? (char)0x231B : " ▶️",
                 FontWeight = FontWeights.SemiBold,
-                Foreground = Brushes.Green,
+                Foreground = request.LastRunWasSuccess ? Brushes.Green : Brushes.Red,
                 Cursor = Cursors.Hand,
                 Padding = new Thickness(0),
                 Margin = new Thickness(4, -2, 0, 0),
@@ -72,13 +74,24 @@ namespace RestClientVS.Language
 
         private void Element_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            VS.Commands.ExecuteAsync(PackageGuids.RestClientVS, PackageIds.SendRequest).FireAndForget();
+            var position = _view.Caret.Position.BufferPosition.Position;
+            Document doc = _buffer.GetRestDocument();
+            Request request = doc.Requests.FirstOrDefault(r => r.Contains(position));
+            if (request != null)
+            {
+                request.StartActive(RaiseTagsChanged);
+                RaiseTagsChanged();
+                VS.Commands.ExecuteAsync(PackageGuids.RestClientVS, PackageIds.SendRequest).FireAndForget();
+            }
         }
 
-        public event EventHandler<SnapshotSpanEventArgs> TagsChanged
+        private void RaiseTagsChanged()
         {
-            add { }
-            remove { }
+            var tempEvent = TagsChanged;
+            if (tempEvent != null)
+                tempEvent(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length)));
         }
+
+        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
     }
 }
