@@ -17,7 +17,7 @@
                  Padding="10"
                  BorderThickness="0"
                  IsReadOnly="True"
-								 Focusable="True"
+                 Focusable="True"
                  FontFamily="Cascadia Mono"/>
     </Grid>
 </UserControl>
