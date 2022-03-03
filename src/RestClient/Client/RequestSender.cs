@@ -91,7 +91,7 @@ namespace RestClient.Client
                     }
                     else
                     {
-                        message.Headers.Add(name, value);
+                        message.Headers.TryAddWithoutValidation(name, value);
                     }
                 }
             }
