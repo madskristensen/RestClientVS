@@ -18,11 +18,12 @@ namespace RestClientVS.Margin
             if (result.Response != null)
             {
                 var text = new StringBuilder();
+                text.AppendLine(result.Response.Headers.ToString());
+                text.AppendLine(result.Response.Content.Headers.ToString());
                 var mediaType = result.Response.Content.Headers.ContentType.MediaType;
                 if (mediaType.IndexOf("json", StringComparison.OrdinalIgnoreCase) > -1)
                 {
                     var jsonString = await result.Response.Content.ReadAsStringAsync();
-                    text.AppendLine(result.Response.Headers.ToString());
                     try
                     {
                         var jsonObject = JObject.Parse(jsonString);
@@ -39,7 +40,6 @@ namespace RestClientVS.Margin
                 if (mediaType.IndexOf("xml", StringComparison.OrdinalIgnoreCase) > -1)
                 {
                     var xmlString = await result.Response.Content.ReadAsStringAsync();
-                    text.AppendLine(result.Response.Headers.ToString());
                     try
                     {
                         var xmlElement = XElement.Parse(xmlString);
