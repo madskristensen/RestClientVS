@@ -112,6 +112,7 @@ namespace RestClient.Client
                 "delete" => HttpMethod.Delete,
                 "options" => HttpMethod.Options,
                 "trace" => HttpMethod.Trace,
+                "patch" => new HttpMethod("PATCH"),
                 _ => HttpMethod.Get,
             };
         }

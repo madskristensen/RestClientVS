@@ -8,11 +8,12 @@ namespace RestClientVS.Completion
         {
             {"GET",     "The GET method is used to retrieve information from the given server using a given URI.Requests using GET should only retrieve data and should have no other effect on the data."},
             {"HEAD",    "Same as GET, but transfers the status line and header section only."},
+            {"PATCH",   "A PATCH request is considered a set of instructions on how to modify a resource. Contrast this with PUT; which is a complete representation of a resource."},
             {"POST",    "A POST request is used to send data to the server, for example, customer information, file upload, etc. using HTML forms"},
             {"PUT",     "Replaces all current representations of the target resource with the uploaded content."},
             {"DELETE",  "Removes all current representations of the target resource given by a URI."},
             {"TRACE",   "Performs a message loop-back test along the path to the target resource."},
-            {"OPTIONS",  "Describes the communication options for the target resource."},
+            {"OPTIONS", "Describes the communication options for the target resource."},
         };
 
         public static readonly IDictionary<string, string> HttpHeaderNames = new Dictionary<string, string>()
