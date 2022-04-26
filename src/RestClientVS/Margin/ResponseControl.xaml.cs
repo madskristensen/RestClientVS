@@ -26,8 +26,8 @@ namespace RestClientVS.Margin
                     var jsonString = await result.Response.Content.ReadAsStringAsync();
                     try
                     {
-                        var jsonObject = JObject.Parse(jsonString);
-                        text.AppendLine(jsonObject.ToString());
+                        var token = JToken.Parse(jsonString);
+                        text.AppendLine(token.ToString());
                     }
                     catch (Exception ex)
                     {
