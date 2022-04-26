@@ -7,7 +7,7 @@ namespace RestClient
 {
     public partial class Document
     {
-        private static readonly Regex _regexUrl = new(@"^((?<method>get|post|put|delete|head|options|trace))\s*(?<url>[^\s]+)\s*(?<version>HTTP/.*)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regexUrl = new(@"^((?<method>get|post|patch|put|delete|head|options|trace))\s*(?<url>[^\s]+)\s*(?<version>HTTP/.*)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex _regexHeader = new(@"^(?<name>[^\s]+)?([\s]+)?(?<operator>:)(?<value>.+)", RegexOptions.Compiled);
         private static readonly Regex _regexVariable = new(@"^(?<name>@[^\s]+)\s*(?<equals>=)\s*(?<value>.+)", RegexOptions.Compiled);
         private static readonly Regex _regexRef = new(@"{{[\w]+}}", RegexOptions.Compiled);
