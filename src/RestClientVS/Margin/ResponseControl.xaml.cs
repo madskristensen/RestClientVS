@@ -20,13 +20,30 @@ namespace RestClientVS.Margin
                 var text = new StringBuilder();
                 text.AppendLine(result.Response.Headers.ToString());
                 text.AppendLine(result.Response.Content.Headers.ToString());
-                var mediaType = result.Response.Content.Headers.ContentType.MediaType;
+                var mediaType = result.Response.Content.Headers?.ContentType?.MediaType;
+                if (mediaType == null)
+                {
+	                var rawString = await result.Response.Content.ReadAsStringAsync();
+	                text.AppendLine("------------------------------------------------");
+	                text.AppendLine($"StatusCode: {result.Response.StatusCode} ({(int)result.Response.StatusCode})");
+	                if (!string.IsNullOrEmpty(rawString))
+	                {
+		                text.AppendLine("Content:");
+		                text.AppendLine(rawString);
+                    }
+
+                    Control.Text = text.ToString();
+                    return;
+                }
                 if (mediaType.IndexOf("json", StringComparison.OrdinalIgnoreCase) > -1)
                 {
                     var jsonString = await result.Response.Content.ReadAsStringAsync();
                     try
                     {
                         var token = JToken.Parse(jsonString);
+                        text.AppendLine("------------------------------------------------");
+                        text.AppendLine($"StatusCode: {result.Response.StatusCode} ({(int)result.Response.StatusCode})");
+                        text.AppendLine("Content:");
                         text.AppendLine(token.ToString());
                     }
                     catch (Exception ex)
@@ -43,6 +60,9 @@ namespace RestClientVS.Margin
                     try
                     {
                         var xmlElement = XElement.Parse(xmlString);
+                        text.AppendLine("------------------------------------------------");
+                        text.AppendLine($"StatusCode: {result.Response.StatusCode} ({(int)result.Response.StatusCode})");
+                        text.AppendLine("Content:");
                         text.AppendLine(xmlElement.ToString());
                     }
                     catch (Exception ex)
