@@ -9,7 +9,7 @@ namespace RestClientVS
         public class GeneralOptions : BaseOptionPage<General> { }
     }
 
-    public class General : BaseOptionModel<General>
+    public class General : BaseOptionModel<General>, IRatingConfig
     {
         [Category("General")]
         [DisplayName("Request timeout")]
@@ -29,5 +29,8 @@ namespace RestClientVS
         [Browsable(false)]
         [DefaultValue(500)]
         public int ResponseWindowWidth { get; set; } = 500;
+
+        [Browsable(false)]
+        public int RatingRequests { get; set; }
     }
 }
