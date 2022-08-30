@@ -14,7 +14,7 @@ REST Client allows you to send HTTP request and view the response in Visual Stud
 ![Screenshot](art/screenshot.png)
 
 ## The .http file
-Any files with the extension `.http` is the entry point to creating HTTP requests.
+Any files with the extension `.http` or `.rest` is the entry point to creating HTTP requests.
 
 Here's an example of how to define the requests with variables and code comments.
 

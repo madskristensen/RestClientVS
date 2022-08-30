@@ -10,7 +10,9 @@ namespace RestClientVS
     public class LanguageFactory : LanguageBase
     {
         public const string LanguageName = "Rest";
-        public const string FileExtension = ".http";
+        public const string HttpFileExtension = ".http";
+        public const string RestFileExtension = ".rest";
+        
         private DropdownBars _dropdownBars;
 
         public LanguageFactory(object site) : base(site)
@@ -23,7 +25,7 @@ namespace RestClientVS
 
         public override string Name => LanguageName;
 
-        public override string[] FileExtensions => new[] { FileExtension };
+        public override string[] FileExtensions => new[] { HttpFileExtension, RestFileExtension };
 
         public override void SetDefaultPreferences(LanguagePreferences preferences)
         {
