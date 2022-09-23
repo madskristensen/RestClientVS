@@ -260,7 +260,7 @@ namespace RestClient
                         }
 
                         var prevEmptyLine = item.Previous?.Type == ItemType.Body && string.IsNullOrWhiteSpace(item.Previous.Text) ? item.Previous.Text : "";
-                        currentRequest.Body += prevEmptyLine + item.Text;
+                        currentRequest.Body += prevEmptyLine + item.TextExcludingLineBreaks;
                         currentRequest?.Children?.Add(item);
                     }
                     else if (item?.Type == ItemType.Comment)
