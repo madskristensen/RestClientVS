@@ -220,6 +220,8 @@ namespace RestClient
             List<Request> requests = new();
             List<Variable> variables = new();
 
+            bool isWwwForm = false;
+
             foreach (ParseItem? item in Items)
             {
                 if (item.Type == ItemType.VariableName)
@@ -251,6 +253,8 @@ namespace RestClient
                         currentRequest?.Headers?.Add(header);
                         currentRequest?.Children?.Add(header.Name);
                         currentRequest?.Children?.Add(header.Value);
+
+                        isWwwForm |= IsWwwFormContentHeader(header);
                     }
                     else if (item.Type == ItemType.Body)
                     {
@@ -260,7 +264,8 @@ namespace RestClient
                         }
 
                         var prevEmptyLine = item.Previous?.Type == ItemType.Body && string.IsNullOrWhiteSpace(item.Previous.Text) ? item.Previous.Text : "";
-                        currentRequest.Body += prevEmptyLine + item.TextExcludingLineBreaks;
+                        string content = isWwwForm ? item.TextExcludingLineBreaks: item.Text;
+                        currentRequest.Body += prevEmptyLine + content;
                         currentRequest?.Children?.Add(item);
                     }
                     else if (item?.Type == ItemType.Comment)
@@ -275,6 +280,12 @@ namespace RestClient
 
             Variables = variables;
             Requests = requests;
+        }
+
+        private bool IsWwwFormContentHeader(Header header)
+        {
+            return header.Name.Text.IsTokenMatch("content-type") &&
+                header.Value.Text.GetFirstToken().IsTokenMatch("application/x-www-form-urlencoded");
         }
 
         public event EventHandler? Parsed;

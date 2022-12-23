@@ -31,7 +31,7 @@ namespace RestClientTest
         [InlineData("application/json; charset=utf-8")]
         public void AddHeadersParseContentTypeTest(string contentType)
         {
-            var lines = new[]
+            var lines = new[] 
             {
                 "POST https://test.fake/api/users/add HTTP/1.1",
                 "Content-type: " + contentType,
@@ -49,13 +49,13 @@ namespace RestClientTest
 
             //var request = new Request(doc, nullParseItem, nullParseItem, null);
 
-            HttpRequestMessage message = new();
+            HttpRequestMessage message = new ();
 
             RequestSender.AddHeaders(request, message);
 
-            Assert.Equal(contentType,
+            Assert.Equal(contentType, 
                 request.Headers.Where(
-                h => string.Compare(h.Name.Text, "content-type", StringComparison.InvariantCultureIgnoreCase) == 0)
+                h => h.Name.Text.IsTokenMatch("content-type"))
                 .First().Value.Text.Trim());
         }
     }

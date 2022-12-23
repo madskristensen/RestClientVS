@@ -88,7 +88,7 @@ namespace RestClient.Client
                     if (name!.Equals("content-type", StringComparison.OrdinalIgnoreCase) && request.Body != null)
                     {
                         // Remove name-value pairs that can follow the MIME type
-                        string mimeType = value!.Split(';')[0];
+                        string mimeType = value!.GetFirstToken();
 
                         message.Content = new StringContent(request.ExpandBodyVariables(), System.Text.Encoding.UTF8, mimeType);
                     }
