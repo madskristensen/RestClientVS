@@ -264,7 +264,7 @@ namespace RestClient
                         }
 
                         var prevEmptyLine = item.Previous?.Type == ItemType.Body && string.IsNullOrWhiteSpace(item.Previous.Text) ? item.Previous.Text : "";
-                        string content = isWwwForm ? item.TextExcludingLineBreaks: item.Text;
+                        string content = isWwwForm ? item.TextExcludingLineBreaks : item.Text;
                         currentRequest.Body += prevEmptyLine + content;
                         currentRequest?.Children?.Add(item);
                     }

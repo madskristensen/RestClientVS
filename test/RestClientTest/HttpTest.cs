@@ -45,10 +45,6 @@ namespace RestClientTest
 
             Request request = doc.Requests?.FirstOrDefault();
 
-            //var nullParseItem = new ParseItem(0, string.Empty, doc, ItemType.EmptyLine);
-
-            //var request = new Request(doc, nullParseItem, nullParseItem, null);
-
             HttpRequestMessage message = new ();
 
             RequestSender.AddHeaders(request, message);
