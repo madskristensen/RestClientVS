@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using RestClient;
 using RestClient.Client;
@@ -23,6 +24,39 @@ namespace RestClientTest
 
             Assert.NotNull(client.Response);
             Assert.True(raw.Length > 50);
+        }
+
+        [Theory]
+        [InlineData("application/json")]
+        [InlineData("application/json; charset=utf-8")]
+        public void AddHeadersParseContentTypeTest(string contentType)
+        {
+            var lines = new[]
+            {
+                "POST https://test.fake/api/users/add HTTP/1.1",
+                "Content-type: " + contentType,
+                "Accept: application/json",
+                "",
+                "{",
+                "}"
+            };
+
+            var doc = Document.FromLines(lines);
+
+            Request request = doc.Requests?.FirstOrDefault();
+
+            //var nullParseItem = new ParseItem(0, string.Empty, doc, ItemType.EmptyLine);
+
+            //var request = new Request(doc, nullParseItem, nullParseItem, null);
+
+            HttpRequestMessage message = new();
+
+            RequestSender.AddHeaders(request, message);
+
+            Assert.Equal(contentType,
+                request.Headers.Where(
+                h => string.Compare(h.Name.Text, "content-type", StringComparison.InvariantCultureIgnoreCase) == 0)
+                .First().Value.Text.Trim());
         }
     }
 }

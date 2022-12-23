@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace RestClient.Client
 {
-    public class RequestSender
+    public static class RequestSender
     {
 
 
@@ -76,7 +76,7 @@ namespace RestClient.Client
             message.Content = new StringContent(request.ExpandBodyVariables());
         }
 
-        private static void AddHeaders(Request request, HttpRequestMessage message)
+        public static void AddHeaders(Request request, HttpRequestMessage message)
         {
             if (request.Headers != null)
             {
@@ -87,12 +87,13 @@ namespace RestClient.Client
 
                     if (name!.Equals("content-type", StringComparison.OrdinalIgnoreCase) && request.Body != null)
                     {
-                        message.Content = new StringContent(request.ExpandBodyVariables(), System.Text.Encoding.UTF8, value);
+                        // Remove name-value pairs that can follow the MIME type
+                        string mimeType = value!.Split(';')[0];
+
+                        message.Content = new StringContent(request.ExpandBodyVariables(), System.Text.Encoding.UTF8, mimeType);
                     }
-                    else
-                    {
-                        message.Headers.TryAddWithoutValidation(name, value);
-                    }
+
+                    message.Headers.TryAddWithoutValidation(name, value);
                 }
             }
 
