@@ -105,6 +105,25 @@ namespace RestClientTest
         }
 
         [Fact]
+        public void RequestWithHeaderAndMultilineWwwFormBody()
+        {
+            var lines = new[]
+            {
+                "POST https://myserver/mypath/myoperation HTTP/1.1",
+                "content-type: application/x-www-form-urlencoded; charset=utf-8",
+                "\r\n",
+                "f=json\r\n",
+                "&inputLocations=123,45;123,46\r\n"
+            };
+
+            var doc = Document.FromLines(lines);
+            Request request = doc.Requests.First();
+
+            Assert.NotNull(request.Body);
+            Assert.Equal("f=json&inputLocations=123,45;123,46", request.Body);
+        }
+
+        [Fact]
         public void RequestWithHeaderAndBodyAndComment()
         {
             var lines = new[]
