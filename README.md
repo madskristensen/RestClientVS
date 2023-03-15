@@ -4,6 +4,10 @@
 
 # Rest Client for Visual Studio
 
+**IMPORTANT:** This extension can only be installed in Visual Studio 2022
+up until version 17.4. In version 17.5 support for .http files were built
+in to Visual Studio.
+
 **Download** this extension from the [VS Marketplace][marketplace]
 or get the [CI build](https://www.vsixgallery.com/extension/RestClientVS.a7b4a362-3ce8-4953-9b19-a35166f2cbfd).
 
